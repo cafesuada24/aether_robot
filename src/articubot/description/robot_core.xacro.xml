@@ -21,6 +21,10 @@
     <color rgba="0 0 0 1" />
   </material>
 
+  <material name="red">
+    <color rgba="1 0 0 1" />
+  </material>
+
 
   <!-- CONSTANTS -->
 
@@ -35,9 +39,19 @@
 
   <!-- LINKS AND JOINTS -->
 
+
+  <!-- Base Footprint -->
+  <link name="base_footprint"></link>
+
   <!-- Base Link -->
   <link name="base_link">
   </link>
+
+  <joint name="base_link_joint" type="fixed">
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0" />
+  </joint>
 
 
   <!-- Chassis Link -->
@@ -65,6 +79,10 @@
     <child link="chassis" />
     <origin xyz="-${base_length / 2} 0 0" />
   </joint>
+
+  <gazebo reference="chassis">
+    <material>Gazebo/White</material>
+  </gazebo>
 
   <!-- Wheels -->
 
@@ -95,6 +113,9 @@
         rpy="-${pi / 2} 0 0" />
       <axis xyz="0 0 1" />
     </joint>
+    <gazebo reference="${name}">
+      <material>Gazebo/Blue</material>
+    </gazebo>
   </xacro:macro>
 
   <!--Back
