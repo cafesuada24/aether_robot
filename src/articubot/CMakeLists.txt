@@ -8,7 +8,22 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(image_transport REQUIRED)
 
+add_executable(usb_cam_preprocessor src/usb_cam_preprocessor.cpp)
+ament_target_dependencies(
+  usb_cam_preprocessor
+  "rclcpp"
+  "sensor_msgs"
+  "std_msgs"
+  "cv_bridge"
+  "OpenCV"
+  "image_transport"
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -21,6 +36,13 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(TARGETS
+    usb_cam_preprocessor
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
   DIRECTORY config description launch worlds
