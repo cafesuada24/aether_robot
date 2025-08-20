@@ -27,7 +27,7 @@
   <gazebo reference="camera_link">
     <material>Gazebo/Red</material>
 
-    <sensor name="camera" type="camera">
+    <sensor name="camera" type="depth">
       <visualize>true</visualize>
       <always_on>true</always_on>
       <update_rate>10</update_rate>
