@@ -28,15 +28,14 @@ class UsbCamPreprocessor : public rclcpp::Node {
             this, "camera/image_raw",
             std::bind(&UsbCamPreprocessor::process_callback, this, _1), "raw",
             rclcpp::SensorDataQoS().get_rmw_qos_profile())},
-        left_cam_pub_{create_publisher<sensor_msgs::msg::Image>(
-            "camera/left/image_raw", 100)},
-        right_cam_pub_{create_publisher<sensor_msgs::msg::Image>(
-            "camera/right/image_raw", 100)},
-        set_camera_info_srv_{
-            create_service<sensor_msgs::srv::SetCameraInfo>(
-                "camera/set_camera_info",
-                std::bind(&UsbCamPreprocessor::set_camera_info_callback,
-                          this, _1, _2))},
+        left_cam_pub_{
+            image_transport::create_publisher(this, "camera/left/image_raw")},
+        right_cam_pub_{
+            image_transport::create_publisher(this, "camera/right/image_raw")},
+        set_camera_info_srv_{create_service<sensor_msgs::srv::SetCameraInfo>(
+            "camera/set_camera_info",
+            std::bind(&UsbCamPreprocessor::set_camera_info_callback, this, _1,
+                      _2))},
         set_left_camera_info_srv_{
             create_service<sensor_msgs::srv::SetCameraInfo>(
                 "camera/left/set_camera_info",
@@ -89,18 +88,19 @@ class UsbCamPreprocessor : public rclcpp::Node {
     cv_img_right.encoding = sensor_msgs::image_encodings::RGB8;
     cv_img_right.image = img_right;
 
-    left_cam_pub_->publish(*cv_img_left.toImageMsg());
-    right_cam_pub_->publish(*cv_img_right.toImageMsg());
+    left_cam_pub_.publish(cv_img_left.toImageMsg());
+    right_cam_pub_.publish(cv_img_right.toImageMsg());
   }
 
   image_transport::Subscriber usb_cam_sub_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr left_cam_pub_;
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr right_cam_pub_;
+  image_transport::Publisher left_cam_pub_;
+  image_transport::Publisher right_cam_pub_;
+  // rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr left_cam_pub_;
+  // rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr right_cam_pub_;
 
   rclcpp::Service<sensor_msgs::srv::SetCameraInfo>::SharedPtr
       set_camera_info_srv_,
-      set_left_camera_info_srv_,
-      set_right_camera_info_srv_;
+      set_left_camera_info_srv_, set_right_camera_info_srv_;
 };
 
 }  // namespace articubot
