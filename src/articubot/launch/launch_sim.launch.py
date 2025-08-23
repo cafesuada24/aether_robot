@@ -19,7 +19,7 @@ def generate_launch_description() -> LaunchDescription:
         launch_arguments={"use_sim_time": "true"}.items(),
     )
 
-    world = os.path.join(pkg_share, 'worlds', 'empty.world')
+    world = os.path.join(pkg_share, "worlds", "empty.world")
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -30,7 +30,7 @@ def generate_launch_description() -> LaunchDescription:
                 ),
             ]
         ),
-        launch_arguments={'gz_args': world}.items()
+        launch_arguments={"gz_args": world}.items(),
     )
 
     spawn_entity = Node(
@@ -56,9 +56,27 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    return LaunchDescription([
-        rsp,
-        gazebo,
-        spawn_entity,
-        bridge_cmd,
-    ])
+    lidar_static_tf_publishing = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "base_footprint",
+            "robot/base_footprint/lidar",
+        ],
+    )
+
+    return LaunchDescription(
+        [
+            rsp,
+            gazebo,
+            spawn_entity,
+            bridge_cmd,
+            lidar_static_tf_publishing,
+        ]
+    )
