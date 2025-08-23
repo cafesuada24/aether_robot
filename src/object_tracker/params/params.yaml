@@ -1,0 +1,27 @@
+object_detector:
+  ros__parameters:
+    # focal_length: 502.778
+    # aspect_ratio: 0.75
+    # camera_frame: "camera_optical_link"
+    x_min: 0
+    x_max: 100
+    y_min: 23
+    y_max: 100
+    h_min: 27
+    h_max: 43
+    s_min: 23
+    s_max: 255
+    v_min: 0
+    v_max: 255
+    sz_min: 0
+    sz_max: 25
+object_follow:
+  ros__parameters:
+    rcv_timeout_secs: 1.0
+    forward_chase_speed: 0.1
+    angular_search_speed: 0.5
+    angular_chase_multiplier: 0.7
+    max_distance_thresh: 0.1
+    filter_value: 0.9
+
+
