@@ -32,7 +32,7 @@ def generate_launch_description() -> LaunchDescription:
             ]
         ),
         launch_arguments={
-            'gz_args': [world, ' -r -v1'],
+            'gz_args': ['-r -v1 ', world],
             'on_exit_shutdown': 'true',
         }.items(),
     )
@@ -75,15 +75,16 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    robot_controllers = os.path.join(
-        pkg_share,
-        'params',
-        'controllers.yaml',
-    )
+    # robot_controllers = os.path.join(
+    #     pkg_share,
+    #     'params',
+    #     'controllers.yaml',
+    # )
     robot_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['four_wheel_controller', '--param-file', robot_controllers],
+        # arguments=['four_wheel_controller', '--param-file', robot_controllers],
+        arguments=['four_wheel_controller'],
     )
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
