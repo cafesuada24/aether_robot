@@ -29,8 +29,7 @@ launch_sim:
 	ros2 launch articubot launch_sim.launch.py
 
 run_rviz:
-	ros2 run rviz2 rviz2 -d src/articubot/config/view_bot.rviz --ros-args -p use_sim_time:=true &&\
-		ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 base_footprint robot/base_footprint/lidar
+	ros2 run rviz2 rviz2 -d src/articubot/config/view_bot.rviz --ros-args -p use_sim_time:=true
 
 #
 # build_bumpgo:
