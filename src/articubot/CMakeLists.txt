@@ -45,7 +45,7 @@ install(TARGETS
 )
 
 install(
-  DIRECTORY config description launch worlds
+  DIRECTORY config description launch worlds params
   DESTINATION share/${PROJECT_NAME}
 )
 

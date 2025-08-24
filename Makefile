@@ -2,11 +2,12 @@ SHELL := /usr/bin/zsh
 ROS_DISTRO := jazzy
 # BASE_CLANG := --build-base build_clang --install-base install_clang
 BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-# PACKAGES_TO_BUILD := fsm_bumpgo_cpp hardware_controller tf2_detector vff_avoidance sim_demo ultrasonic_aggregator urdf_tutorial obstacle_avoidance_interfaces obstacle_avoidance
-# PACKAGES_TO_BUILD := ultrasonic_aggregator
+PACKAGES_TO_BUILD := articubot object_tracker
+
+GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib/
 
 
-.PHONY: build build_clean 
+.PHONY: build build_clean launch_rsp launch_sim run_rviz
 # run_bumpgo run_gz run_bridge build_bumpgo set_mode_auto set_mode_hard_control
 
 build:
@@ -20,6 +21,16 @@ build:
 build_clean:
 	rm -rf build/ install/ log/ &&\
 	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD) 
+
+launch_rsp:
+	ros2 launch articubot rsp.launch.py use_sim_time:=true
+
+launch_sim:
+	ros2 launch articubot launch_sim.launch.py
+
+run_rviz:
+	ros2 run rviz2 rviz2 -d src/articubot/config/view_bot.rviz --ros-args -p use_sim_time:=true &&\
+		ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 base_footprint robot/base_footprint/lidar
 
 #
 # build_bumpgo:
@@ -56,8 +67,8 @@ build_clean:
 # 		config_file:=bridge.yaml
 #
 #
-# open_teleop:
-# 	ros2 run teleop_twist_keyboard teleop_twist_keyboard
+open_teleop:
+	ros2 run teleop_twist_keyboard teleop_twist_keyboard
 # 	# ros2 run teleop_twist_keyboard teleop_twist_keyboard \
 # 	# 	--ros-args -r cmd_vel:=/input_key
 #

@@ -19,7 +19,7 @@ def generate_launch_description() -> LaunchDescription:
         plugin='object_tracker::node::ObjectDetector',
         name='object_detector',
         parameters=[params],
-        remappings=[('/image_in', '/camera/left/image_raw')]
+        remappings=[('/image_in', '/camera/image_raw')]
     ) 
 
     object_follow_node = ComposableNode(
@@ -27,6 +27,7 @@ def generate_launch_description() -> LaunchDescription:
         plugin='object_tracker::node::ObjectFollow',
         name='object_follow',
         parameters=[params],
+        # remappings=[('/out_vel', '/cmd_vel')]
     )
 
     container = ComposableNodeContainer(

@@ -5,16 +5,16 @@ object_detector:
     # camera_frame: "camera_optical_link"
     x_min: 0
     x_max: 100
-    y_min: 23
+    y_min: 0
     y_max: 100
     h_min: 27
     h_max: 43
     s_min: 23
     s_max: 255
-    v_min: 0
+    v_min: 49
     v_max: 255
     sz_min: 0
-    sz_max: 25
+    sz_max: 255
 object_follow:
   ros__parameters:
     rcv_timeout_secs: 1.0
