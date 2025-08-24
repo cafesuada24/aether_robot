@@ -4,7 +4,7 @@ ROS_DISTRO := jazzy
 BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 PACKAGES_TO_BUILD := articubot object_tracker
 
-GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib/
+GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/${ROS_DISTRO}/lib/
 
 
 .PHONY: build build_clean launch_rsp launch_sim run_rviz
@@ -67,7 +67,9 @@ run_rviz:
 #
 #
 open_teleop:
-	ros2 run teleop_twist_keyboard teleop_twist_keyboard
+	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
+		--ros-args -p stamped:=true -p use_sim_time:=true\
+		-r /cmd_vel:=/four_wheel_controller/cmd_vel
 # 	# ros2 run teleop_twist_keyboard teleop_twist_keyboard \
 # 	# 	--ros-args -r cmd_vel:=/input_key
 #
