@@ -21,7 +21,7 @@
       <!-- <ros> -->
       <!--   <namespace>$(arg namespace)</namespace> -->
       <!-- </ros> -->
-      <parameters>$(find articubot)/params/controllers.yaml</parameters>
+      <parameters>$(find articubot)/param/controllers.yaml</parameters>
     </plugin>
 
     <!-- <plugin -->

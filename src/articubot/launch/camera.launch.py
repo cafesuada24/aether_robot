@@ -7,9 +7,9 @@ from launch_ros.actions import Node
 
 def generate_launch_description() -> LaunchDescription:
     param_file = os.path.join(
-        get_package_share_directory("articubot"),
-        "config",
-        "cam_params.yaml",
+        get_package_share_directory('articubot'),
+        'param',
+        'cam_params.yaml',
     )
     return LaunchDescription(
         [
@@ -26,14 +26,14 @@ def generate_launch_description() -> LaunchDescription:
             #     remappings=[("__ns", "/camera")],
             # ),
             Node(
-                package="usb_cam",
-                executable="usb_cam_node_exe",
-                arguments=["--ros-args", "--params-file", param_file],
-                remappings=[("__ns", "/camera")],
+                package='usb_cam',
+                executable='usb_cam_node_exe',
+                arguments=['--ros-args', '--params-file', param_file],
+                remappings=[('__ns', '/camera')],
             ),
             Node(
-                package="articubot",
-                executable="usb_cam_preprocessor",
+                package='articubot',
+                executable='usb_cam_preprocessor',
             ),
         ]
     )

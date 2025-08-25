@@ -20,7 +20,7 @@ def generate_launch_description() -> LaunchDescription:
         launch_arguments={'use_sim_time': 'true'}.items(),
     )
 
-    world = os.path.join(pkg_share, 'worlds', 'empty.world')
+    world = os.path.join(pkg_share, 'world', 'empty.world')
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -75,11 +75,6 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    # robot_controllers = os.path.join(
-    #     pkg_share,
-    #     'params',
-    #     'controllers.yaml',
-    # )
     robot_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
