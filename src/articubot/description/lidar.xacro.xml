@@ -23,9 +23,9 @@
     </xacro:inertial_cylinder>
   </link>
   <joint name="lidar_joint" type="fixed">
-    <parent link="chassis" />
+    <parent link="base_link" />
     <child link="lidar_frame" />
-    <origin xyz="${base_length / 2} 0 ${(base_height + lidar_height) / 2} " rpy="0 0 0" />
+    <origin xyz="-${base_length / 4} 0 ${base_height / 2 + lidar_height} " rpy="0 0 0" />
   </joint>
 
   <gazebo reference="lidar_frame">
@@ -35,14 +35,15 @@
       <visualize>true</visualize>
       <update_rate>10</update_rate>
       <topic>lidar</topic>
+      <gz_frame_id>lidar_frame</gz_frame_id>
 
       <lidar>
         <scan>
           <horizontal>
             <samples>360</samples>
             <resolution>1</resolution>
-            <min_angle>-3.14</min_angle>
-            <max_angle>3.14</max_angle>
+            <min_angle>0.0</min_angle>
+            <max_angle>6.28</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -50,6 +51,11 @@
           <max>10.0</max>
           <resolution>0.01</resolution>
         </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
       </lidar>
     </sensor>
   </gazebo>
