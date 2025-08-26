@@ -20,8 +20,8 @@ def generate_launch_description() -> LaunchDescription:
         launch_arguments={'use_sim_time': 'true'}.items(),
     )
 
-    world = os.path.join(pkg_share, 'world', 'house.world')
-    gazebo = IncludeLaunchDescription(
+    world = os.path.join(pkg_share, 'worlds', 'house.world')
+    gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 os.path.join(
@@ -29,13 +29,31 @@ def generate_launch_description() -> LaunchDescription:
                     'launch',
                     'gz_sim.launch.py',
                 ),
-            ]
+            ],
         ),
         launch_arguments={
-            'gz_args': ['-r -v1 ', world],
+            'gz_args': ['-r -v2 ', world],
             'on_exit_shutdown': 'true',
         }.items(),
     )
+
+    # gzclient_cmd = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         [
+    #             os.path.join(
+    #                 get_package_share_directory('ros_gz_sim'),
+    #                 'launch',
+    #                 'gz_sim.launch.py',
+    #             ),
+    #         ]
+    #     ),
+    #     launch_arguments={
+    #         'gz_args': ['-g -v2 '],
+    #         'on_exit_shutdown': 'true',
+    #     }.items(),
+    # )
+
+
 
     spawn_entity = Node(
         package='ros_gz_sim',
@@ -45,6 +63,12 @@ def generate_launch_description() -> LaunchDescription:
             'robot_description',
             '-entity',
             'my_bot',
+            '-x',
+            '0.0',
+            '-y',
+            '0.0',
+            '-z',
+            '2',
         ],
         output='screen',
     )
@@ -60,55 +84,41 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    lidar_static_tf_publishing = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        arguments=[
-            '0',
-            '0',
-            '0',
-            '0',
-            '0',
-            '0',
-            'base_footprint',
-            'robot/base_footprint/lidar',
-        ],
-    )
-
-    robot_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        # arguments=['four_wheel_controller', '--param-file', robot_controllers],
-        arguments=['four_wheel_controller'],
-    )
-    joint_state_broadcaster_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['joint_state_broadcaster'],
-    )
-
-    delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=spawn_entity,
-            on_exit=[joint_state_broadcaster_spawner],
-        ),
-    )
-
-    delay_controller_spawner_after_joint_state_broadcaster = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[robot_controller_spawner],
-        ),
-    )
+    # robot_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     # arguments=['four_wheel_controller', '--param-file', robot_controllers],
+    #     arguments=['four_wheel_controller'],
+    # )
+    # joint_state_broadcaster_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['joint_state_broadcaster'],
+    # )
+    #
+    # delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=spawn_entity,
+    #         on_exit=[joint_state_broadcaster_spawner],
+    #     ),
+    # )
+    #
+    # delay_controller_spawner_after_joint_state_broadcaster = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=joint_state_broadcaster_spawner,
+    #         on_exit=[robot_controller_spawner],
+    #     ),
+    # )
 
     return LaunchDescription(
         [
-            rsp,
-            gazebo,
+            # gzserver_cmd,
+            # gzclient_cmd,
+            gz_sim,
             spawn_entity,
+            rsp,
             bridge_cmd,
-            lidar_static_tf_publishing,
-            delay_joint_state_broadcaster_after_robot_controller_spawner,
-            delay_controller_spawner_after_joint_state_broadcaster,
+            # delay_joint_state_broadcaster_after_robot_controller_spawner,
+            # delay_controller_spawner_after_joint_state_broadcaster,
         ],
     )
