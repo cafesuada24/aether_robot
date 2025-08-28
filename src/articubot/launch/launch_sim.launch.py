@@ -20,7 +20,7 @@ def generate_launch_description() -> LaunchDescription:
         launch_arguments={'use_sim_time': 'true'}.items(),
     )
 
-    world = os.path.join(pkg_share, 'worlds', 'house.world')
+    world = os.path.join(pkg_share, 'worlds', 'obstacle.world')
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
