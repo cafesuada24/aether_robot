@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 def generate_launch_description() -> LaunchDescription:
     param_file = os.path.join(
         get_package_share_directory('articubot'),
-        'param',
+        'params',
         'cam_params.yaml',
     )
     return LaunchDescription(
@@ -35,5 +35,5 @@ def generate_launch_description() -> LaunchDescription:
                 package='articubot',
                 executable='usb_cam_preprocessor',
             ),
-        ]
+        ],
     )

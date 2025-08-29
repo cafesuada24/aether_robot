@@ -45,7 +45,7 @@ install(TARGETS
 )
 
 install(
-  DIRECTORY config description launch params worlds models
+  DIRECTORY config description launch rviz params worlds models
   DESTINATION share/${PROJECT_NAME}
 )
 
