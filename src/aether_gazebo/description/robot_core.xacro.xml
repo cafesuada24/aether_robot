@@ -33,6 +33,7 @@
 
   <xacro:property name='wheel_radius' value='0.03' />
   <xacro:property name='wheel_width' value='0.025' />
+  <xacro:property name='wheel_y_offset' value='0.0015' />
 
 
   <!-- LINKS AND JOINTS -->
@@ -85,31 +86,34 @@
         <origin xyz='0 0 0' rpy='${pi/2} 0 0' />
         <geometry>
           <cylinder radius='${wheel_radius}' length='${wheel_width}' />
-          <!-- <sphere radius='${radius}' /> -->
+          <!-- <sphere radius='${wheel_radius}' /> -->
         </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>100000.0</mu>
-              <mu2>100000.0</mu2>
-              <fdir1>0 0 0</fdir1>
-              <slip1>0.0</slip1>
-              <slip2>0.0</slip2>
-            </ode>
-          </friction>
-          <contact>
-            <ode>
-              <soft_cfm>0</soft_cfm>
-              <soft_erp>0.2</soft_erp>
-              <kp>1e+5</kp>
-              <kd>1</kd>
-              <max_vel>0.01</max_vel>
-              <min_depth>0.001</min_depth>
-            </ode>
-          </contact>
-        </surface>
+        <!-- <surface> -->
+        <!--   <friction> -->
+        <!--     <ode> -->
+        <!--       <mu>1.0</mu> -->
+        <!--       <mu2>1.0</mu2> -->
+        <!--       <fdir1>0 0 0</fdir1> -->
+        <!--       <slip1>0.0</slip1> -->
+        <!--       <slip2>0.0</slip2> -->
+        <!--     </ode> -->
+        <!--   </friction> -->
+        <!--   <contact> -->
+        <!--     <ode> -->
+        <!--       <soft_cfm>0</soft_cfm> -->
+        <!--       <soft_erp>0.2</soft_erp> -->
+        <!--       <kp>1e+5</kp> -->
+        <!--       <kd>1</kd> -->
+        <!--       <max_vel>0.01</max_vel> -->
+        <!--       <min_depth>0.001</min_depth> -->
+        <!--     </ode> -->
+        <!--   </contact> -->
+        <!-- </surface> -->
       </collision>
-      <xacro:inertial_cylinder mass='0.1' length='${wheel_width}' radius='${wheel_radius}'>
+      <!-- <xacro:inertial_sphere mass='0.05' radius='${wheel_radius}'> -->
+      <!--   <origin xyz='0 0 0' rpy='0 0 0' /> -->
+      <!-- </xacro:inertial_sphere> -->
+      <xacro:inertial_cylinder mass='0.05' length='${wheel_width}' radius='${wheel_radius}'>
         <origin xyz='0 0 0' rpy='0 0 0' />
       </xacro:inertial_cylinder>
     </link>
@@ -169,20 +173,20 @@
   <xacro:wheel
     prefix='wheel_front_left'
     parent_link='base_link'
-    origin_xyz='${base_length/4} ${(base_width + wheel_width)/2} -${base_height/2 + base_z_offset - wheel_radius}' />
+    origin_xyz='${base_length/4} ${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
   <xacro:wheel
     prefix='wheel_front_right'
     parent_link='base_link'
-    origin_xyz='${base_length/4} -${(base_width + wheel_width)/2} -${base_height/2 + base_z_offset - wheel_radius}' />
+    origin_xyz='${base_length/4} -${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
   <xacro:wheel
     prefix='wheel_rear_left'
     parent_link='base_link'
-    origin_xyz='-${base_length/4} ${(base_width + wheel_width)/2} -${base_height/2 + base_z_offset - wheel_radius}' />
+    origin_xyz='-${base_length/4} ${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
   <xacro:wheel
     prefix='wheel_rear_right'
     parent_link='base_link'
-    origin_xyz='-${base_length/4} -${(base_width + wheel_width)/2} -${base_height/2 + base_z_offset - wheel_radius}' />
+    origin_xyz='-${base_length/4} -${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 </robot>

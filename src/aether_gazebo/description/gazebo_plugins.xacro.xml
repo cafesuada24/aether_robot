@@ -31,10 +31,10 @@
       <right_joint>wheel_front_right_joint</right_joint>
       <right_joint>wheel_rear_right_joint</right_joint>
 
-      <wheel_separation>${base_width}</wheel_separation>
+      <wheel_separation>${base_width + 2*wheel_y_offset}</wheel_separation>
       <wheel_radius>${wheel_radius}</wheel_radius>
 
-      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <max_linear_acceleration>0.8</max_linear_acceleration>
       <!-- <min_linear_acceleration>-1</min_linear_acceleration> -->
       <!-- <max_angular_acceleration>2</max_angular_acceleration> -->
       <!-- <min_angular_acceleration>-2</min_angular_acceleration> -->
@@ -43,14 +43,14 @@
       <!-- <max_angular_velocity>1</max_angular_velocity> -->
       <!-- <min_angular_velocity>-1</min_angular_velocity> -->
 
+      <topic>/cmd_vel</topic>
       <odom_topic>/odom</odom_topic>
       <tf_topic>/tf</tf_topic>
 
       <frame_id>odom</frame_id>
       <child_frame_id>base_link</child_frame_id>
-      <odom_publisher_frequency>30</odom_publisher_frequency>
+      <!-- <odom_publisher_frequency>30</odom_publisher_frequency> -->
 
-      <topic>cmd_vel</topic>
     </plugin>
 
     <plugin filename='gz-sim-joint-state-publisher-system'
