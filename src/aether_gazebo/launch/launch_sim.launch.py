@@ -31,7 +31,6 @@ def generate_launch_description() -> LaunchDescription:
     )
     world_path = os.path.join(pkg_share, 'worlds', 'obstacle.world')
 
-
     robot_description_config = Command(
         [
             'xacro ',
@@ -78,6 +77,17 @@ def generate_launch_description() -> LaunchDescription:
         use_composition='True',
     )
 
+    robot_localization_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_node',
+        output='screen',
+        parameters=[
+            os.path.join(pkg_share, 'params', 'ekf.yaml'),
+            {'use_sim_time': use_sim_time},
+        ],
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -90,10 +100,11 @@ def generate_launch_description() -> LaunchDescription:
                 default_value='True',
                 description='Flag to enable use_sim_time',
             ),
-            gz_server,
             gz_client_cmd,
             robot_state_publisher_node,
+            gz_server,
             ros_gz_bridge,
             spawn_entity,
+            robot_localization_node,
         ],
     )
