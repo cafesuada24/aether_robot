@@ -22,7 +22,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
-    default_model_path = os.path.join(pkg_share, 'description', 'robot.urdf.xacro.xml')
+    default_model_path = os.path.join(pkg_share, 'description', 'robot', 'robot1.sdf')
     bridge_config_path = os.path.join(pkg_share, 'config', 'bridge.yaml')
     gz_spawn_model_launch_source = os.path.join(
         ros_gz_sim_share,
@@ -80,7 +80,7 @@ def generate_launch_description() -> LaunchDescription:
     robot_localization_node = Node(
         package='robot_localization',
         executable='ekf_node',
-        name='ekf_filter_node',
+        name='ekf_node',
         output='screen',
         parameters=[
             os.path.join(pkg_share, 'params', 'ekf.yaml'),
@@ -97,7 +97,7 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 name='use_sim_time',
-                default_value='True',
+                default_value='true',
                 description='Flag to enable use_sim_time',
             ),
             gz_client_cmd,
