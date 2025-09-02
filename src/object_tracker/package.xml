@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>articubot</name>
+  <name>object_tracker</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="108068915+cafesuada24@users.noreply.github.com">serein</maintainer>
@@ -10,6 +10,12 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>OpenCV</depend>
+  <depend>image_transport</depend>
+  <depend>rclcpp_components</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

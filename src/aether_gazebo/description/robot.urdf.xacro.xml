@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="aether_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="inertial_macros.xacro.xml" />
+  <xacro:include filename="robot_core.xacro.xml" />
+  <xacro:include filename="camera.xacro.xml" />
+  <xacro:include filename="lidar.xacro.xml" />
+  <xacro:include filename="imu.xacro.xml" />
+  <xacro:include filename="ros2_control.xacro.xml" />
+  <!-- <xacro:include filename="gazebo_plugins.xacro.xml" /> -->
+
+</robot>

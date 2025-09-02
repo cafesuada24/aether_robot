@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<robot xmlns:xacro='http://www.ros.org/wiki/xacro'>
+  <link name='imu_link'>
+    <visual>
+      <geometry>
+        <box size='0.01 0.01 0.01' />
+      </geometry>
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size='0.01 0.01 0.01' />
+      </geometry>
+    </collision>
+
+    <xacro:box_inertia m="0.05" w="0.01" d="0.01" h="0.01" />
+  </link>
+
+  <joint name='imu_joint' type='fixed'>
+    <parent link='base_link' />
+    <child link='imu_link' />
+    <!-- <origin xyz='0 0 ${base_height/2 + 0.04 + 0.005}' /> -->
+    <origin xyz='0 0 0' />
+  </joint>
+  <!---->
+  <!-- <gazebo reference='imu_link'> -->
+  <!--   <sensor name='imu_sensor' type='imu'> -->
+  <!--     <always_on>true</always_on> -->
+  <!--     <update_rate>100</update_rate> -->
+  <!--     <visualize>true</visualize> -->
+  <!--     <topic>imu</topic> -->
+  <!--     <gz_frame_id>imu_link</gz_frame_id> -->
+  <!--     <imu> -->
+  <!--       <angular_velocity> -->
+  <!--         <x> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>2e-4</stddev> -->
+  <!--             <bias_mean>0.0000075</bias_mean> -->
+  <!--             <bias_stddev>0.0000008</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </x> -->
+  <!--         <y> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>2e-4</stddev> -->
+  <!--             <bias_mean>0.0000075</bias_mean> -->
+  <!--             <bias_stddev>0.0000008</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </y> -->
+  <!--         <z> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>2e-4</stddev> -->
+  <!--             <bias_mean>0.0000075</bias_mean> -->
+  <!--             <bias_stddev>0.0000008</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </z> -->
+  <!--       </angular_velocity> -->
+  <!--       <linear_acceleration> -->
+  <!--         <x> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>1.7e-2</stddev> -->
+  <!--             <bias_mean>0.1</bias_mean> -->
+  <!--             <bias_stddev>0.001</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </x> -->
+  <!--         <y> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>1.7e-2</stddev> -->
+  <!--             <bias_mean>0.1</bias_mean> -->
+  <!--             <bias_stddev>0.001</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </y> -->
+  <!--         <z> -->
+  <!--           <noise type='gaussian'> -->
+  <!--             <mean>0.0</mean> -->
+  <!--             <stddev>1.7e-2</stddev> -->
+  <!--             <bias_mean>0.1</bias_mean> -->
+  <!--             <bias_stddev>0.001</bias_stddev> -->
+  <!--           </noise> -->
+  <!--         </z> -->
+  <!--       </linear_acceleration> -->
+  <!--     </imu> -->
+  <!--   </sensor> -->
+  <!-- </gazebo> -->
+</robot>
