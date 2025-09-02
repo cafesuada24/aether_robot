@@ -26,14 +26,16 @@
 
   <!-- CONSTANTS -->
 
-  <xacro:property name='base_height' value='0.035' />
-  <xacro:property name='base_width' value='0.15' />
-  <xacro:property name='base_length' value='0.25' />
+  <xacro:property name='base_height' value='0.1' />
+  <xacro:property name='base_width' value='0.16' />
+  <xacro:property name='base_length' value='0.23' />
+  <xacro:property name="base_mass" value="0.052" />
   <xacro:property name='base_z_offset' value='0.0175' />
 
-  <xacro:property name='wheel_radius' value='0.03' />
+  <xacro:property name='wheel_radius' value='0.0325' />
   <xacro:property name='wheel_width' value='0.025' />
-  <xacro:property name='wheel_y_offset' value='0.0015' />
+  <xacro:property name="wheel_mass" value="0.029" />
+  <xacro:property name="wheel_y_offset" value="0.003" />
 
 
   <!-- LINKS AND JOINTS -->
@@ -57,11 +59,9 @@
       </geometry>
     </collision>
 
-    <xacro:inertial_box mass='0.5' x='${base_length}' y='${base_width}' z='${base_height}'>
-      <origin xyz='0 0 0' rpy='0 0 0' />
-    </xacro:inertial_box>
+    <xacro:box_inertia m="${base_mass}" w="${base_width}" h="${base_height}" d="${base_length}" />
   </link>
-  
+
   <link name='base_footprint' />
 
   <joint name='base_joint' type='fixed'>
@@ -72,53 +72,29 @@
 
   <!-- Wheels -->
 
-  <xacro:macro name='wheel' params='prefix origin_xyz parent_link'>
+  <xacro:macro name='wheel' params='prefix origin_xyz'>
     <link name='${prefix}_link'>
       <visual>
-        <origin xyz='0 0 0' rpy='${pi/2} 0 0' />
+        <origin xyz='0 0 0' rpy='-${pi/2} 0 0' />
         <geometry>
           <cylinder radius='${wheel_radius}' length='${wheel_width}' />
           <!-- <sphere radius='${radius}' /> -->
         </geometry>
         <material name='blue' />
       </visual>
+
       <collision>
-        <origin xyz='0 0 0' rpy='${pi/2} 0 0' />
+        <origin xyz='0 0 0' rpy='-${pi/2} 0 0' />
         <geometry>
           <cylinder radius='${wheel_radius}' length='${wheel_width}' />
-          <!-- <sphere radius='${wheel_radius}' /> -->
         </geometry>
-        <!-- <surface> -->
-        <!--   <friction> -->
-        <!--     <ode> -->
-        <!--       <mu>1.0</mu> -->
-        <!--       <mu2>1.0</mu2> -->
-        <!--       <fdir1>0 0 0</fdir1> -->
-        <!--       <slip1>0.0</slip1> -->
-        <!--       <slip2>0.0</slip2> -->
-        <!--     </ode> -->
-        <!--   </friction> -->
-        <!--   <contact> -->
-        <!--     <ode> -->
-        <!--       <soft_cfm>0</soft_cfm> -->
-        <!--       <soft_erp>0.2</soft_erp> -->
-        <!--       <kp>1e+5</kp> -->
-        <!--       <kd>1</kd> -->
-        <!--       <max_vel>0.01</max_vel> -->
-        <!--       <min_depth>0.001</min_depth> -->
-        <!--     </ode> -->
-        <!--   </contact> -->
-        <!-- </surface> -->
       </collision>
-      <!-- <xacro:inertial_sphere mass='0.05' radius='${wheel_radius}'> -->
-      <!--   <origin xyz='0 0 0' rpy='0 0 0' /> -->
-      <!-- </xacro:inertial_sphere> -->
-      <xacro:inertial_cylinder mass='0.05' length='${wheel_width}' radius='${wheel_radius}'>
-        <origin xyz='0 0 0' rpy='0 0 0' />
-      </xacro:inertial_cylinder>
+
+      <xacro:cylinder_inertia m="${wheel_mass}" h="${wheel_width}" r="${wheel_radius}" />
     </link>
+
     <joint name='${prefix}_joint' type='continuous'>
-      <parent link='${parent_link}' />
+      <parent link='base_link' />
       <child link='${prefix}_link' />
       <origin
         xyz='${origin_xyz}'
@@ -127,66 +103,47 @@
     </joint>
   </xacro:macro>
 
-  <xacro:macro name='caster_wheel' params='name radius length origin_xyz parent_link'>
-    <link name='${name}'>
+  <xacro:macro name='caster_wheel' params='prefix origin_xyz'>
+    <link name='${prefix}_link'>
       <visual>
         <origin xyz='0 0 0' rpy='0 0 0' />
         <geometry>
-          <cylinder radius='${radius}' length='${length}' />
-          <!-- <sphere radius='${radius}' /> -->
+          <sphere radius='${wheel_radius}' />
         </geometry>
         <material name='blue' />
       </visual>
+
       <collision>
         <origin xyz='0 0 0' rpy='0 0 0' />
         <geometry>
           <!-- <cylinder radius='${radius}' length='${length}' /> -->
-          <sphere radius='${radius}' />
-          <surface>
-            <contact>
-              <ode>
-                <soft_cfm>0</soft_cfm>
-                <soft_erp>0.2</soft_erp>
-                <kp>1e+5</kp>
-                <kd>1</kd>
-                <max_vel>0.01</max_vel>
-                <min_depth>0.001</min_depth>
-              </ode>
-            </contact>
-          </surface>
+          <sphere radius='${wheel_radius}' />
         </geometry>
       </collision>
-      <xacro:inertial_sphere mass='0.005' radius='${radius}'>
-        <origin xyz='0 0 0' rpy='0 0 0' />
-      </xacro:inertial_sphere>
+
+      <xacro:sphere_inertia m="${wheel_mass}" r="${wheel_radius}" />
     </link>
-    <joint name='${name}_joint' type='continuous'>
-      <parent link='${parent_link}' />
-      <child link='${name}' />
-      <origin
-        xyz='${origin_xyz}'
-        rpy='-${pi / 2} 0 0' />
-      <axis xyz='0 0 1' />
+
+    <joint name='${prefix}_joint' type='fixed'>
+      <parent link='base_link' />
+      <child link='${prefix}_link' />
+      <origin xyz='${origin_xyz}' rpy='0 0 0' />
     </joint>
   </xacro:macro>
 
   <xacro:wheel
     prefix='wheel_front_left'
-    parent_link='base_link'
     origin_xyz='${base_length/4} ${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
   <xacro:wheel
     prefix='wheel_front_right'
-    parent_link='base_link'
     origin_xyz='${base_length/4} -${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
-  <xacro:wheel
+  <xacro:caster_wheel
     prefix='wheel_rear_left'
-    parent_link='base_link'
     origin_xyz='-${base_length/4} ${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 
-  <xacro:wheel
+  <xacro:caster_wheel
     prefix='wheel_rear_right'
-    parent_link='base_link'
     origin_xyz='-${base_length/4} -${(base_width + wheel_width)/2 + wheel_y_offset} -${base_height/2 + base_z_offset - wheel_radius}' />
 </robot>
