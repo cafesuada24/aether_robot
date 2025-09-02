@@ -19,10 +19,9 @@ PKG_NAME: str = 'aether_gazebo'
 def generate_launch_description() -> LaunchDescription:
     model_path = LaunchConfiguration('model')
     use_sim_time = LaunchConfiguration('use_sim_time')
-
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
-    default_model_path = os.path.join(pkg_share, 'description', 'robot', 'robot1.sdf')
+    default_robot_description_path = os.path.join(pkg_share, 'description', 'robot', 'robot.sdf')
     bridge_config_path = os.path.join(pkg_share, 'config', 'bridge.yaml')
     gz_spawn_model_launch_source = os.path.join(
         ros_gz_sim_share,
@@ -31,7 +30,7 @@ def generate_launch_description() -> LaunchDescription:
     )
     world_path = os.path.join(pkg_share, 'worlds', 'obstacle.world')
 
-    robot_description_config = Command(
+    robot_urdf_config = Command(
         [
             'xacro ',
             model_path,
@@ -44,7 +43,7 @@ def generate_launch_description() -> LaunchDescription:
         executable='robot_state_publisher',
         parameters=[
             {
-                'robot_description': robot_description_config,
+                'robot_description': robot_urdf_config,
                 'use_sim_time': use_sim_time,
             },
         ],
@@ -92,7 +91,7 @@ def generate_launch_description() -> LaunchDescription:
         [
             DeclareLaunchArgument(
                 name='model',
-                default_value=default_model_path,
+                default_value=default_robot_description_path,
                 description='Absolute path to robot model file',
             ),
             DeclareLaunchArgument(
