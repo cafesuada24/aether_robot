@@ -379,9 +379,9 @@
             </horizontal>
           </scan>
           <range>
-            <min>0.120000</min>
-            <max>3.5</max>
-            <resolution>0.015000</resolution>
+            <min>0.20000</min>
+            <max>10.0</max>
+            <resolution>0.01</resolution>
           </range>
           <noise>
             <type>gaussian</type>
