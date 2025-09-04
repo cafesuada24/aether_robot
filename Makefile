@@ -5,7 +5,7 @@ BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 SIM_PKG := aether_gazebo
 
-PACKAGES_TO_BUILD := ${SIM_PKG} object_tracker
+PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker
 
 
 .PHONY: build build_clean launch_rsp launch_sim run_rviz
