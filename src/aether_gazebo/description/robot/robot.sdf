@@ -400,35 +400,82 @@
     <!--   <parameters>$(find articubot)/params/controllers.yaml</parameters> -->
     <!-- </plugin> -->
 
-    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+    <ros2_control name="GazeboSimSystem" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
 
-      <left_joint>wheel_front_left_joint</left_joint>
-      <!-- <left_joint>wheel_rear_left_joint</left_joint> -->
-      <right_joint>wheel_front_right_joint</right_joint>
+      <!-- <joint name="rear_left_wheel_joint"> -->
+      <!--   <command_interface name="velocity"> -->
+      <!--     <param name="min">-10</param> -->
+      <!--     <param name="max">10</param> -->
+      <!--   </command_interface> -->
+      <!---->
+      <!--   <state_interface name="velocity" /> -->
+      <!--   <state_interface name="position" /> -->
+      <!-- </joint> -->
+      <!---->
+      <!-- <joint name="rear_right_wheel_joint"> -->
+      <!--   <command_interface name="velocity"> -->
+      <!--     <param name="min">-10</param> -->
+      <!--     <param name="max">10</param> -->
+      <!--   </command_interface> -->
+      <!---->
+      <!--   <state_interface name="velocity" /> -->
+      <!--   <state_interface name="position" /> -->
+      <!-- </joint> -->
 
+      <joint name="wheel_front_left_joint">
+        <command_interface name="velocity">
+          <param name="min">-10</param>
+          <param name="max">10</param>
+        </command_interface>
 
-      <wheel_separation>${base_width + 2*wheel_width + wheel_width}</wheel_separation>
-      <wheel_radius>${wheel_radius}</wheel_radius>
+        <state_interface name="velocity" />
+        <state_interface name="position" />
+      </joint>
 
-      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <joint name="wheel_front_right_joint">
+        <command_interface name="velocity">
+          <param name="min">-10</param>
+          <param name="max">10</param>
+        </command_interface>
 
-      <topic>/cmd_vel</topic>
-      <odom_topic>/odom</odom_topic>
-      <tf_topic>/tf</tf_topic>
+        <state_interface name="velocity" />
+        <state_interface name="position" />
+      </joint>
 
-      <frame_id>odom</frame_id>
-      <child_frame_id>base_link</child_frame_id>
+    </ros2_control>
 
-      <odom_publisher_frequency>30</odom_publisher_frequency>
+    <plugin filename='gz_ros2_control-system' name='gz_ros2_control::GazeboSimROS2ControlPlugin'>
+      <parameters>$(find aether_gazebo)/params/controllers.yaml</parameters>
     </plugin>
+    <!-- <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive"> -->
+    <!---->
+    <!--   <left_joint>wheel_front_left_joint</left_joint> -->
+    <!--   <right_joint>wheel_front_right_joint</right_joint> -->
+    <!---->
+    <!---->
+    <!--   <wheel_separation>${base_width + 2*wheel_width + wheel_width}</wheel_separation> -->
+    <!--   <wheel_radius>${wheel_radius}</wheel_radius> -->
+    <!---->
+    <!--   <max_linear_acceleration>1.0</max_linear_acceleration> -->
+    <!---->
+    <!--   <topic>/cmd_vel</topic> -->
+    <!--   <odom_topic>/odom</odom_topic> -->
+    <!--   <tf_topic>/tf</tf_topic> -->
+    <!---->
+    <!--   <frame_id>odom</frame_id> -->
+    <!--   <child_frame_id>base_link</child_frame_id> -->
+    <!---->
+    <!--   <odom_publisher_frequency>30</odom_publisher_frequency> -->
+    <!-- </plugin> -->
 
     <plugin filename="gz-sim-joint-state-publisher-system"
       name="gz::sim::systems::JointStatePublisher">
       <topic>joint_states</topic>
       <joint_name>wheel_front_left_joint</joint_name>
       <joint_name>wheel_front_right_joint</joint_name>
-      <!-- <joint_name>wheel_rear_left_joint</joint_name> -->
-      <!-- <joint_name>wheel_rear_right_joint</joint_name> -->
     </plugin>
 
     <!-- << PLUGINS << -->

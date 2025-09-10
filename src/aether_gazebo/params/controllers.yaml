@@ -15,13 +15,13 @@ four_wheel_controller:
 
     use_stamped_vel: false
 
-    left_wheel_names: ['wheel_front_left_joint', 'wheel_rear_left_joint']
-    right_wheel_names: ['wheel_front_right_joint', 'wheel_rear_right_joint']
+    left_wheel_names: ['wheel_front_left_joint']
+    right_wheel_names: ['wheel_front_right_joint']
 
-    wheel_separation: 0.175
+    wheel_separation: 0.235
     wheel_radius: 0.0325
     
     odom_frame_id: odom
-    base_frame_id: base_baselink
+    base_frame_id: base_link
   
 
