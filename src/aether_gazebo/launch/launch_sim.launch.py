@@ -6,10 +6,13 @@ from launch.actions import (
     DeclareLaunchArgument,
     ExecuteProcess,
     IncludeLaunchDescription,
+    RegisterEventHandler,
 )
+from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from ros_gz_bridge.actions import RosGzBridge
 from ros_gz_sim.actions import GzServer
 
@@ -21,7 +24,9 @@ def generate_launch_description() -> LaunchDescription:
     use_sim_time = LaunchConfiguration('use_sim_time')
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
-    default_robot_description_path = os.path.join(pkg_share, 'description', 'robot', 'robot.sdf')
+    default_robot_description_path = os.path.join(
+        pkg_share, 'description', 'robot', 'robot.sdf'
+    )
     bridge_config_path = os.path.join(pkg_share, 'config', 'bridge.yaml')
     gz_spawn_model_launch_source = os.path.join(
         ros_gz_sim_share,
@@ -29,15 +34,24 @@ def generate_launch_description() -> LaunchDescription:
         'gz_spawn_model.launch.py',
     )
     world_path = os.path.join(pkg_share, 'worlds', 'obstacle.world')
-
-    robot_urdf_config = Command(
-        [
-            'xacro ',
-            model_path,
-            ' sim_mode:=',
-            use_sim_time,
-        ],
+    robot_controllers = os.path.join(
+        pkg_share,
+        'params',
+        'controllers.yaml',
     )
+
+    robot_urdf_config = ParameterValue(
+        Command(
+            [
+                'xacro ',
+                model_path,
+                ' sim_mode:=',
+                use_sim_time,
+            ],
+        ),
+        value_type=str,
+    )
+
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -49,6 +63,19 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    # gz_sim = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(
+    #             ros_gz_sim_share,
+    #             'launch',
+    #             'gz_sim.launch.py',
+    #         ),
+    #     ),
+    #     launch_arguments={
+    #         'gz_args': f' -r {world_path}',
+    #         'on_exit_shutdown': 'true',
+    #     }.items(),
+    # )
     gz_server = GzServer(
         world_sdf_file=world_path,
         container_name='ros_gz_container',
@@ -87,6 +114,33 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    # control_node = Node(
+    #     package='controller_manager',
+    #     executable='ros2_control_node',
+    #     name="controller_manager",
+    #     parameters=[robot_controllers],
+    #     output='screen',
+    # )
+
+    joint_state_broadcaster_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_state_broadcaster'],
+    )
+
+    robot_controller_spawner = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['four_wheel_controller', '--param-file', robot_controllers],
+    )
+
+    delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=robot_controller_spawner,
+            on_exit=[joint_state_broadcaster_spawner],
+        ),
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -99,11 +153,15 @@ def generate_launch_description() -> LaunchDescription:
                 default_value='true',
                 description='Flag to enable use_sim_time',
             ),
+            # gz_sim,
             gz_client_cmd,
             robot_state_publisher_node,
             gz_server,
             ros_gz_bridge,
             spawn_entity,
-            robot_localization_node,
+            # robot_localization_node,
+            # control_node,
+            robot_controller_spawner,
+            delay_joint_state_broadcaster_after_robot_controller_spawner,
         ],
     )
