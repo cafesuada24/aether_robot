@@ -13,6 +13,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(gz_ros2_control REQUIRED)
 
 add_executable(usb_cam_preprocessor src/usb_cam_preprocessor.cpp)
 ament_target_dependencies(
