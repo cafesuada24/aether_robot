@@ -3,3 +3,4 @@ install
 log
 venv
 requirements.txt
+.env
