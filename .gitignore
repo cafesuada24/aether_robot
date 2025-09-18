@@ -1,6 +1,7 @@
-build
-install
+/build
+/install
+/venv
+/requirements.txt
 log
-venv
-requirements.txt
 .env
+__pycache__
