@@ -78,7 +78,7 @@ controller_server:
     controller_plugins: ["FollowPath"]
     # odom_topic: /odom
     use_realtime_priority: false
-    # enable_stamped_cmd_vel: false
+    enable_stamped_cmd_vel: true
 
     # Progress checker parameters
     progress_checker:
@@ -108,9 +108,9 @@ controller_server:
       vx_std: 0.2
       vy_std: 0.2
       wz_std: 0.4
-      vx_max: 0.5
-      vx_min: -0.35
-      vy_max: 0.5
+      vx_max: 1.0
+      vx_min: 0.0
+      vy_max: 0.0
       wz_max: 1.9
       iteration_count: 1
       prune_distance: 1.7
@@ -303,6 +303,7 @@ behavior_server:
     local_footprint_topic: local_costmap/published_footprint
     global_footprint_topic: global_costmap/published_footprint
     cycle_frequency: 10.0
+    enable_stamped_cmd_vel: True
     behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
     spin:
       plugin: "nav2_behaviors::Spin"
@@ -339,14 +340,15 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 2.0]
-    min_velocity: [-0.5, 0.0, -2.0]
+    max_velocity: [1.0, 0.0, 2.0]
+    min_velocity: [0.0, 0.0, -2.0]
     max_accel: [2.5, 0.0, 3.2]
-    max_decel: [-2.5, 0.0, -3.2]
+    max_decel: [0.0, 0.0, -3.2]
     odom_topic: "odom"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
+    enable_stamped_cmd_vel: True
 
 collision_monitor:
   ros__parameters:
@@ -354,7 +356,7 @@ collision_monitor:
     odom_frame_id: "odom"
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
-    # enable_stamped_cmd_vel: false
+    enable_stamped_cmd_vel: True
     state_topic: "collision_monitor_state"
     transform_tolerance: 0.2
     source_timeout: 1.0
@@ -393,6 +395,7 @@ docking_server:
     fixed_frame: "odom"
     dock_backwards: false
     dock_prestaging_tolerance: 0.5
+    enable_stamped_cmd_vel: True
 
     # Types of docks
     dock_plugins: ['simple_charging_dock']
@@ -439,7 +442,7 @@ loopback_simulator:
     odom_frame_id: "odom"
     map_frame_id: "map"
     scan_frame_id: "lidar_link"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
-    # enable_stamped_cmd_vel: false
+    enable_stamped_cmd_vel: True
     update_duration: 0.02
     scan_range_min: 0.05
     scan_range_max: 30.0
