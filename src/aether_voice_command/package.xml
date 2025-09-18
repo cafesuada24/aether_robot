@@ -8,6 +8,14 @@
   <license>Apache-2.0</license>
 
   <depend>rclpy</depend>
+  <depend>aether_interfaces</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <exec_depend>python3-dotenv</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
