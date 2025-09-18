@@ -3,10 +3,15 @@ name = "Aether"
 version = "0.0.1"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13" # ">=3.12"
+requires-python = ">=3.12"
 dependencies = [
   'setuptools',
   'semantic-kernel[google]',
+  'typeguard',
+  'dotenv',
+  'catkin-pkg',
+  'empy',
+  'lark',
 ]
 
 [tool.ruff]
@@ -30,47 +35,48 @@ docstring-code-line-length = 72
 #     "ALL",
 # ]
 select = [
-    "F",      # pyflakes (runtime errors, unused imports/variables)
-    "E", "W", # pycodestyle (style and whitespace)
-    "I",      # isort (import sorting)
-    "N",      # pep8-naming
-    "UP",     # pyupgrade (modernize syntax)
-    "B",      # flake8-bugbear (common bugs & best practices)
-    "SIM",    # flake8-simplify (code simplification)
-    "C4",     # flake8-comprehensions (list/set/dict comprehension help)
-    "TC",     # flake8-type-checking (move typing imports to `if TYPE_CHECKING`)
-    "PL",     # flake8-unused-arguments
-    "RET",    # flake8-return (return statement issues)
-    "ARG",    # pylint rules (a subset)
-    "ANN",    # type annotations enforcement
-    "COM",    # flake8-commas
-    "C90",    # maccabe complexity
-    "D",      # pydocstyle
-    "A",      # flake8-builtins
+  "F",   # pyflakes (runtime errors, unused imports/variables)
+  "E",
+  "W",   # pycodestyle (style and whitespace)
+  "I",   # isort (import sorting)
+  "N",   # pep8-naming
+  "UP",  # pyupgrade (modernize syntax)
+  "B",   # flake8-bugbear (common bugs & best practices)
+  "SIM", # flake8-simplify (code simplification)
+  "C4",  # flake8-comprehensions (list/set/dict comprehension help)
+  "TC",  # flake8-type-checking (move typing imports to `if TYPE_CHECKING`)
+  "PL",  # flake8-unused-arguments
+  "RET", # flake8-return (return statement issues)
+  "ARG", # pylint rules (a subset)
+  "ANN", # type annotations enforcement
+  "COM", # flake8-commas
+  "C90", # maccabe complexity
+  "D",   # pydocstyle
+  "A",   # flake8-builtins
 
-    # "YTT",
-    # "DTZ",
-    # "ISC",
-    # "ICN",
-    # "INP",
-    # "PIE",
-    # "PT",
-    # "TID",
-    # "PLC",
-    # "PLE",
-    # "PLR",
-    # "PLW",
-    # "RUF",
-    # "PYI",
+  # "YTT",
+  # "DTZ",
+  # "ISC",
+  # "ICN",
+  # "INP",
+  # "PIE",
+  # "PT",
+  # "TID",
+  # "PLC",
+  # "PLE",
+  # "PLR",
+  # "PLW",
+  # "RUF",
+  # "PYI",
 ]
 
 ignore = [
-    'Q000',   # Double quote
-    'ERA001', # Code comment
-    'E501',   # line too long
-    'F841',   # pyright already supports this
-    'F401',   
-    'D416',   # numpydocstyle does not use colon in section name
+  'Q000',   # Double quote
+  'ERA001', # Code comment
+  'E501',   # line too long
+  'F841',   # pyright already supports this
+  'F401',
+  'D416',   # numpydocstyle does not use colon in section name
 ]
 
 fixable = ['ALL']
