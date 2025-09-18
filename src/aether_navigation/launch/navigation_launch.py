@@ -25,6 +25,7 @@ from nav2_common.launch import RewrittenYaml
 
 PKG_NAME = 'aether_navigation'
 
+
 def generate_launch_description() -> LaunchDescription:
     """Navigation launch file."""
     # Get the launch directory
@@ -58,7 +59,11 @@ def generate_launch_description() -> LaunchDescription:
     # https://github.com/ros/robot_state_publisher/pull/30
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
-    remappings = [('/tf', 'tf'), ('/tf_static', 'tf_static')]
+    remappings = [
+        ('/tf', 'tf'),
+        ('/tf_static', 'tf_static'),
+        ('/cmd_vel', 'four_wheel_controller/cmd_vel'),
+    ]
 
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {'autostart': autostart}
@@ -199,8 +204,7 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                remappings=remappings
-                + [('cmd_vel', 'cmd_vel_nav')],
+                remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
             ),
             Node(
                 package='nav2_collision_monitor',
@@ -289,8 +293,7 @@ def generate_launch_description() -> LaunchDescription:
                         plugin='nav2_velocity_smoother::VelocitySmoother',
                         name='velocity_smoother',
                         parameters=[configured_params],
-                        remappings=remappings
-                        + [('cmd_vel', 'cmd_vel_nav')],
+                        remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
                         package='nav2_collision_monitor',
