@@ -32,7 +32,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            f'llm_service = {package_name}.service:main',
+            f'llm_service = {package_name}.llm_service:main',
             f'llm_client = {package_name}.client:main',
         ],
     },
