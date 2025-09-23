@@ -10,7 +10,7 @@ PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether aether_v
 
 
 
-.PHONY: build build_clean launch_rsp launch_sim run_rviz
+.PHONY: build build_clean launch_rsp launch_sim run_rviz run_docker_container build_docker_container
 # run_bumpgo run_gz run_bridge build_bumpgo set_mode_auto set_mode_hard_control
 
 build:
@@ -34,6 +34,22 @@ launch_sim:
 
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
+
+
+
+build_docker_container: Dockerfile
+	docker build -t aether-bot .
+
+run_docker_container:
+	docker run -it --rm --name aether_bot_cont \
+		--network=host \
+		--gpus all \
+		--device=/dev/ttyUSB0 \
+		aether-bot:latest \
+		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
+shell_attach_docker:
+	docker exec -it aether_bot_cont bash
+
 
 #
 # build_bumpgo:
