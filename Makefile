@@ -35,6 +35,18 @@ launch_sim:
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
 
+build_docker_container: Dockerfile
+	docker build -t aether-bot .
+
+run_docker_container:
+	docker run -it --rm --name aether_bot_cont \
+		--network=host \
+		--gpus all \
+		aether-bot:latest \
+		# --device=/dev/ttyUSB0 \
+		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
+shell_attach_docker:
+	docker exec -it aether_bot_cont bash
 #
 # build_bumpgo:
 # 	colcon build $(BUILD_ARGS) \
