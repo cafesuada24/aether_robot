@@ -97,18 +97,17 @@ class NavigationPlugin:
             return False
         msg_to_pub = TwistStamped()
         msg_to_pub.header.stamp = self.__clock.now().to_msg()
-        match direction:
-            case 'f':
-                msg_to_pub.twist.linear.x = speed
-            case 'b':
-                msg_to_pub.twist.linear.x = -speed
-            case 'l':
-                msg_to_pub.twist.angular.z = speed
-            case 'r':
-                msg_to_pub.twist.angular.z = -speed
-            case _:
-                self.__logger.info(f'Invalid direction: {direction}')
-                return False
+        if direction == 'f':
+            msg_to_pub.twist.linear.x = speed
+        elif direction ==  'b':
+            msg_to_pub.twist.linear.x = -speed
+        elif direction == 'l':
+            msg_to_pub.twist.angular.z = speed
+        elif direction == 'r':
+            msg_to_pub.twist.angular.z = -speed
+        else:
+            self.__logger.info(f'Invalid direction: {direction}')
+            return False
 
         self.__publisher.publish(msg_to_pub)
         return True
