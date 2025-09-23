@@ -1,4 +1,5 @@
 ROS_DISTRO='jazzy'
+PYTHON_VERSION='3.12'
 
 export RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'
 export GZ_SIM_SYSTEM_PLUGIN_PATH="/opt/ros/${ROS_DISTRO}/lib/"
@@ -18,8 +19,8 @@ source "$VENV_DIR/bin/activate"
 touch "$VENV_DIR/COLCON_IGNORE"
 echo 'Done.'
 
-if [[ new_env -eq 1 ]]; then
-    python3 -m pip install -r requirements.txt
+if [[ $new_env -eq 1 ]]; then
+    python3 -m pip install --no-cache-dir -r requirements.txt
 fi
 
 echo "Sourcing ROS $ROS_DISTRO underlay environment..."
@@ -31,4 +32,4 @@ source ./install/setup.zsh && echo "Done."
 eval "$(register-python-argcomplete ros2)"
 eval "$(register-python-argcomplete colcon)"
 
-export PYTHONPATH="$VENV_DIR/lib/python3.12/site-packages":$PYTHONPATH
+export PYTHONPATH="$VENV_DIR/lib/python${PYTHON_VERSION}/site-packages":$PYTHONPATH
