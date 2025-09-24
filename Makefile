@@ -36,7 +36,7 @@ run_rviz:
 	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
 
 build_docker_container: Dockerfile
-	docker build -t aether-bot .
+	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
 
 run_docker_container:
 	docker run -it --rm --name aether_bot_cont \
