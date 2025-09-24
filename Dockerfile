@@ -1,4 +1,4 @@
-FROM osrf/ros:jazzy-desktop-full
+FROM arm64v8/ros:jazzy
 
 SHELL ["/bin/bash", "-c"]
 
@@ -15,7 +15,7 @@ COPY ./venv ./venv
 
 RUN source ./scripts/setup.bash && \
     rosdep update --rosdistro jazzy && rosdep install --rosdistro jazzy --from-paths src --ignore-src -r -y && \
-    colcon build
+    colcon build --packages-ignore aether_gazebo
 RUN rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash"]
