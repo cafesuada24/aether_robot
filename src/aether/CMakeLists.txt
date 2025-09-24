@@ -15,8 +15,18 @@ find_package(twist_mux REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+add_executable(twist_stamper_node src/twist_stamper_node.cpp)
+ament_target_dependencies(
+  twist_stamper_node 
+  "rclcpp"
+  "geometry_msgs"
+)
 
 ament_python_install_package(${PROJECT_NAME})
+
+install(TARGETS twist_stamper_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(PROGRAMS
     scripts/driver.py
