@@ -69,9 +69,5 @@ run_rviz:
 #
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
-		--ros-args -p use_sim_time:=true\
-		-r /cmd_vel:=/four_wheel_controller/cmd_vel\
+		--ros-args -r /cmd_vel:=/key_cmd_vel\
 		-p stamped:=true
-# 	# ros2 run teleop_twist_keyboard teleop_twist_keyboard \
-# 	# 	--ros-args -r cmd_vel:=/input_key
-#
