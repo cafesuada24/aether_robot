@@ -1,8 +1,12 @@
 /twist_mux:
   ros__parameters:
-    keyboard:
-      topic: key_cmd_vel
-      priority: 10
-    navigation:
-      topic: nav_cmd_vel
-      priority: 20
+    use_stamped: true
+    topics:
+      keyboard:
+        topic: /key_cmd_vel
+        timeout: 0.5
+        priority: 10
+      navigation:
+        topic: /nav_cmd_vel
+        timeout: 0.5
+        priority: 20
