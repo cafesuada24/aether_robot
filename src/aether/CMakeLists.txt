@@ -10,12 +10,23 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(twist_mux REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+add_executable(twist_stamper_node src/twist_stamper_node.cpp)
+ament_target_dependencies(
+  twist_stamper_node 
+  "rclcpp"
+  "geometry_msgs"
+)
 
 ament_python_install_package(${PROJECT_NAME})
+
+install(TARGETS twist_stamper_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(PROGRAMS
     scripts/driver.py
@@ -34,4 +45,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+install(
+    DIRECTORY params launch
+    DESTINATION share/${PROJECT_NAME}
+)
 ament_package()
