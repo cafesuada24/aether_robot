@@ -25,7 +25,10 @@ def generate_launch_description() -> LaunchDescription:
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
     default_robot_description_path = os.path.join(
-        pkg_share, 'description', 'robot', 'robot.sdf'
+        pkg_share,
+        'description',
+        'robot',
+        'robot.sdf',
     )
     bridge_config_path = os.path.join(pkg_share, 'config', 'bridge.yaml')
     gz_spawn_model_launch_source = os.path.join(
@@ -76,12 +79,25 @@ def generate_launch_description() -> LaunchDescription:
     #         'on_exit_shutdown': 'true',
     #     }.items(),
     # )
-    gz_server = GzServer(
-        world_sdf_file=world_path,
-        container_name='ros_gz_container',
-        create_own_container='True',
-        use_composition='True',
+    gz_sim = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim_share, 'launch', 'ros_gz_sim.launch.py'),
+        ),
+        launch_arguments={
+            'world_sdf_file': world_path,
+            'create_own_container': 'True',
+            'container_name': 'ros_gz_sim_container',
+            'use_composition': 'True',
+            'bridge_name': 'ros_gz_bridge',
+            'config_file': bridge_config_path,
+        }.items(),
     )
+    # GzServer(
+    #     world_sdf_file=world_path,
+    #     container_name='ros_gz_container',
+    #     create_own_container='True',
+    #     use_composition='True',
+    # )
 
     gz_client_cmd = ExecuteProcess(cmd=['gz', 'sim', '-g', '-r'], output='screen')
 
@@ -95,13 +111,13 @@ def generate_launch_description() -> LaunchDescription:
         }.items(),
     )
 
-    ros_gz_bridge = RosGzBridge(
-        bridge_name='ros_gz_bridge',
-        config_file=bridge_config_path,
-        container_name='ros_gz_container',
-        create_own_container='False',
-        use_composition='True',
-    )
+    # ros_gz_bridge = RosGzBridge(
+    #     bridge_name='ros_gz_bridge',
+    #     config_file=bridge_config_path,
+    #     container_name='ros_gz_container',
+    #     create_own_container='False',
+    #     use_composition='True',
+    # )
 
     robot_localization_node = Node(
         package='robot_localization',
@@ -156,8 +172,7 @@ def generate_launch_description() -> LaunchDescription:
             # gz_sim,
             gz_client_cmd,
             robot_state_publisher_node,
-            gz_server,
-            ros_gz_bridge,
+            gz_sim,
             spawn_entity,
             # robot_localization_node,
             # control_node,
