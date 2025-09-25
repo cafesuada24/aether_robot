@@ -24,6 +24,7 @@ def generate_launch_description() -> LaunchDescription:
     use_sim_time = LaunchConfiguration('use_sim_time')
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
+    aether_share = get_package_share_directory('aether')
     default_robot_description_path = os.path.join(
         pkg_share, 'description', 'robot', 'robot.sdf'
     )
@@ -114,14 +115,6 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    # control_node = Node(
-    #     package='controller_manager',
-    #     executable='ros2_control_node',
-    #     name="controller_manager",
-    #     parameters=[robot_controllers],
-    #     output='screen',
-    # )
-
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -132,6 +125,12 @@ def generate_launch_description() -> LaunchDescription:
         package='controller_manager',
         executable='spawner',
         arguments=['four_wheel_controller', '--param-file', robot_controllers],
+    )
+
+    aether_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(aether_share, 'launch', 'aether.launch.py'),
+        ),
     )
 
     delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
@@ -163,5 +162,6 @@ def generate_launch_description() -> LaunchDescription:
             # control_node,
             robot_controller_spawner,
             delay_joint_state_broadcaster_after_robot_controller_spawner,
+            aether_launch,
         ],
     )
