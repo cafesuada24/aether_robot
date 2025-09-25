@@ -13,12 +13,10 @@ four_wheel_controller:
   ros__parameters:
     publish_rate: 50.0
 
-    use_stamped_vel: false
-
     left_wheel_names: ['wheel_front_left_joint']
     right_wheel_names: ['wheel_front_right_joint']
 
-    wheel_separation: 0.235
+    wheel_separation: 0.212
     wheel_radius: 0.0325
     
     odom_frame_id: odom
