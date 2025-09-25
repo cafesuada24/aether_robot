@@ -169,14 +169,10 @@
         <visual name="${prefix}_visual">
           <pose relative_to="${prefix}_link">0 0 0 -${pi/2} 0 0</pose>
           <geometry>
-            <!-- <cylinder> -->
-            <!--   <radius>${wheel_radius}</radius> -->
-            <!--   <length>${wheel_width}</length> -->
-            <!-- </cylinder> -->
-
-            <sphere>
+            <cylinder>
               <radius>${wheel_radius}</radius>
-            </sphere>
+              <length>${wheel_width}</length>
+            </cylinder>
           </geometry>
         </visual>
 
@@ -404,26 +400,6 @@
       <hardware>
         <plugin>gz_ros2_control/GazeboSimSystem</plugin>
       </hardware>
-
-      <!-- <joint name="rear_left_wheel_joint"> -->
-      <!--   <command_interface name="velocity"> -->
-      <!--     <param name="min">-10</param> -->
-      <!--     <param name="max">10</param> -->
-      <!--   </command_interface> -->
-      <!---->
-      <!--   <state_interface name="velocity" /> -->
-      <!--   <state_interface name="position" /> -->
-      <!-- </joint> -->
-      <!---->
-      <!-- <joint name="rear_right_wheel_joint"> -->
-      <!--   <command_interface name="velocity"> -->
-      <!--     <param name="min">-10</param> -->
-      <!--     <param name="max">10</param> -->
-      <!--   </command_interface> -->
-      <!---->
-      <!--   <state_interface name="velocity" /> -->
-      <!--   <state_interface name="position" /> -->
-      <!-- </joint> -->
 
       <joint name="wheel_front_left_joint">
         <command_interface name="velocity">
