@@ -29,7 +29,7 @@ class DriverNode : public rclcpp::Node {
 
     arduino_ = new aether_driver::Arduino(
         get_parameter("serial_port").as_string(),
-        get_parameter("braudrate").as_int(),
+        get_parameter("baudrate").as_int(),
         get_parameter("serial_timeout_ms").as_int(),
         get_parameter("encoder_resolution").as_int(),
         get_parameter("wheel_diameter_meter").as_double(),
@@ -50,7 +50,7 @@ class DriverNode : public rclcpp::Node {
     this->declare_parameter("serial_timeout_ms", 500);
     this->declare_parameter("wheel_diameter_meter", 0.065);
     this->declare_parameter("encoder_resolution", 20);
-    this->declare_parameter("gear_reduction", 1 / 48);
+    this->declare_parameter("gear_reduction", 1.0 / 48);
   }
 
   void DriveServiceCallback(
