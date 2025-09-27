@@ -29,7 +29,7 @@ class Arduino {
   float wheel_diameter_meter_ {}; 
   float gear_reduction_ {};
 
-  bool drive(const uint16_t left_ticks_per_sec, const uint16_t right_ticks_per_sec);
+  bool drive(const uint16_t left_ticks_per_loop, const uint16_t right_ticks_per_loop);
 };
 }  // namespace aether_driver
 
