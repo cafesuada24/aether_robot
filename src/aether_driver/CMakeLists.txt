@@ -8,6 +8,32 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(aether_interfaces)
+
+include_directories(include)
+
+# file(GLOB IMPL_FILES ${PROJECT_SOURCE_DIR}/impl/**/*.cc)
+add_library(serial_lib SHARED
+  src/lib/serial/serial.cc
+  src/lib/serial/impl/unix.cc
+  src/lib/serial/impl/win.cc
+)
+target_include_directories(serial_lib PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/serial>)
+
+add_library(arduino_lib SHARED
+    src/lib/arduino.cc
+)
+target_include_directories(arduino_lib PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+add_executable(driver_node src/nodes/driver_node.cpp)
+target_link_libraries(driver_node serial_lib arduino_lib)
+ament_target_dependencies(
+  driver_node
+  "rclcpp"
+  "aether_interfaces"
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -20,5 +46,12 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+install(TARGETS
+  driver_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
 
 ament_package()
