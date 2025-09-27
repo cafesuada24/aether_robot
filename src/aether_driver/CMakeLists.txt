@@ -12,18 +12,18 @@ find_package(aether_interfaces)
 
 include_directories(include)
 
-# file(GLOB IMPL_FILES ${PROJECT_SOURCE_DIR}/impl/**/*.cc)
 add_library(serial_lib SHARED
   src/lib/serial/serial.cc
   src/lib/serial/impl/unix.cc
   src/lib/serial/impl/win.cc
 )
 target_include_directories(serial_lib PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/serial>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 add_library(arduino_lib SHARED
-    src/lib/arduino.cc
+  src/lib/arduino.cc
 )
+target_link_libraries(arduino_lib serial_lib)
 target_include_directories(arduino_lib PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
