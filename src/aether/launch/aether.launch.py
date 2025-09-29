@@ -6,6 +6,7 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
 )
+from launch.launch_description_source import LaunchDescriptionSource
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -20,6 +21,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pkg_share = get_package_share_directory(PKG_NAME)
     aether_nav_share = get_package_share_directory('aether_navigation')
+    rosbridge_server_share = get_package_share_directory('rosbridge_server')
     twist_mux_params_file = os.path.join(
         pkg_share,
         'params',
@@ -52,6 +54,16 @@ def generate_launch_description() -> LaunchDescription:
         }.items(),
     )
 
+    websocket_node = Node(
+        package='rosbridge_server',
+        executable='rosbridge_websocket',
+    )
+
+    web_video_server = Node(
+        package='web_video_server',
+        executable='web_video_server',
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -68,5 +80,7 @@ def generate_launch_description() -> LaunchDescription:
             twist_mux_node,
             slam_online_async_launch,
             navigation_launch,
+            websocket_node,
+            web_video_server,
         ],
     )
