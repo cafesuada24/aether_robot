@@ -1,18 +1,21 @@
 SHELL := /usr/bin/zsh
 ROS_DISTRO := jazzy
 # BASE_CLANG := --build-base build_clang --install-base install_clang
+PYTHON3_EXECUTABLE := $(shell which python3)
 BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 SIM_PKG := aether_gazebo
 
-PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether
+PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether aether_voice_command aether_interfaces
+
 
 
 .PHONY: build build_clean launch_rsp launch_sim run_rviz
 # run_bumpgo run_gz run_bridge build_bumpgo set_mode_auto set_mode_hard_control
 
 build:
-	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD) 
+	echo "Building using python3: $(which python3)" && \
+	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 	# [[ -f "./build/compile_commands.json" ]] &&\
 	# ([[-f "./compile_commands.json" ]] && rm ./compile_commands.json ||\
 	# [[ !-f "./compile_commands.json" ]]) &&\
@@ -20,8 +23,8 @@ build:
 	# echo "compile_commands.json linked"
 	
 build_clean:
-	rm -rf build/ install/ log/ &&\
-	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD) 
+	rm -rf build/ install/ log/ && \
+	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 
 launch_rsp:
 	ros2 launch $(SIM_PKG) rsp.launch.py use_sim_time:=true
