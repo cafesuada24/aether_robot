@@ -7,6 +7,8 @@ from launch.actions import (
     ExecuteProcess,
     IncludeLaunchDescription,
     RegisterEventHandler,
+    TimerAction,
+    timer_action,
 )
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -147,6 +149,10 @@ def generate_launch_description() -> LaunchDescription:
         PythonLaunchDescriptionSource(
             os.path.join(aether_share, 'launch', 'aether.launch.py'),
         ),
+        launch_arguments={
+            'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
+            'sim_mode': 'true',
+        }.items(),
     )
 
     delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
@@ -177,6 +183,11 @@ def generate_launch_description() -> LaunchDescription:
             # control_node,
             robot_controller_spawner,
             delay_joint_state_broadcaster_after_robot_controller_spawner,
-            aether_launch,
+            TimerAction(
+                period=3.0,
+                actions=[
+                    aether_launch,
+                ],
+            ),
         ],
     )
