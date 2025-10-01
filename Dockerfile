@@ -10,8 +10,8 @@ RUN apt update && apt install -y \
 WORKDIR /ros2_ws
 COPY ./src ./src
 COPY ./scripts ./scripts
-# COPY ./requirements.txt ./
-COPY ./venv ./venv
+COPY ./requirements.txt ./
+# COPY ./venv ./venv
 
 RUN source ./scripts/setup.bash && \
     rosdep update --rosdistro jazzy --ignore-packages aether_gazebo object-tracker && \
