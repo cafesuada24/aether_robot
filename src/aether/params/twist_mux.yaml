@@ -6,6 +6,10 @@
         topic: /key_cmd_vel
         timeout: 0.5
         priority: 10
+      joy:
+        topic: /joy_cmd_vel
+        timeout: 0.5
+        priority: 10
       navigation:
         topic: /nav_cmd_vel
         timeout: 0.5
