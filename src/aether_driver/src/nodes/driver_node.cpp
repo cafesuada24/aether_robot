@@ -33,7 +33,9 @@ class DriverNode : public rclcpp::Node {
         get_parameter("serial_timeout_ms").as_int(),
         get_parameter("encoder_resolution").as_int(),
         get_parameter("wheel_diameter_meter").as_double(),
-        get_parameter("gear_reduction").as_double());
+        get_parameter("gear_reduction").as_double(),
+        get_parameter("min_linear_speed_m_per_s").as_double(),
+        get_parameter("max_linear_speed_m_per_s").as_double());
 
     RCLCPP_INFO(get_logger(), "Connected to ardunio");
   }
@@ -47,10 +49,12 @@ class DriverNode : public rclcpp::Node {
   void declare_parameters() {
     this->declare_parameter("serial_port", "/dev/ttyUSB0");
     this->declare_parameter("baudrate", 57600);
-    this->declare_parameter("serial_timeout_ms", 500);
+    this->declare_parameter("serial_timeout_ms", 1000);
     this->declare_parameter("wheel_diameter_meter", 0.065);
-    this->declare_parameter("encoder_resolution", 20);
+    this->declare_parameter("encoder_resolution", 40);
     this->declare_parameter("gear_reduction", 1.0 / 48);
+    this->declare_parameter("min_linear_speed_m_per_s", 0.3);
+    this->declare_parameter("max_linear_speed_m_per_s", 1.0);
   }
 
   void DriveServiceCallback(
@@ -69,8 +73,8 @@ class DriverNode : public rclcpp::Node {
                 vel_cmd.linear.x, vel_cmd.angular.z);
 
     try {
-      RCLCPP_DEBUG(get_logger(), "Driving with speeds: %fm/s, %fm/s", vel_cmd.linear.x,
-                   vel_cmd.linear.x);
+      RCLCPP_DEBUG(get_logger(), "Driving with speeds: %fm/s, %fm/s",
+                   vel_cmd.linear.x, vel_cmd.linear.x);
       arduino_->drive_m_per_sec(vel_cmd.linear.x, vel_cmd.linear.x);
     } catch (std::exception& ex) {
       response->code = 1;
