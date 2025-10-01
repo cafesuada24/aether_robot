@@ -64,6 +64,19 @@ def generate_launch_description() -> LaunchDescription:
         executable='web_video_server',
     )
 
+    teleop_twist_joy = Node(
+        package='teleop_twist_joy',
+        executable='teleop_node',
+        parameters=[
+            {'publish_stamped_twist': True},
+            {'require_enable_button': False},
+            {'axis_linear.x': 1},
+            {'axis_angular.yaw': 0},
+            {'use_sim_time': True},
+        ],
+        remappings=[('cmd_vel', 'joy_cmd_vel')],
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -80,6 +93,7 @@ def generate_launch_description() -> LaunchDescription:
             twist_mux_node,
             slam_online_async_launch,
             navigation_launch,
+            teleop_twist_joy,
             websocket_node,
             web_video_server,
         ],
