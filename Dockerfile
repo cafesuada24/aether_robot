@@ -14,9 +14,9 @@ COPY ./scripts ./scripts
 COPY ./venv ./venv
 
 RUN source ./scripts/setup.bash && \
-    rosdep update --rosdistro jazzy --ignore-packages aether_gazebo && \
-    rosdep install --rosdistro jazzy --from-paths src --ignore-packages aether_gazebo --ignore-src -r -y && \
-    colcon build --packages-ignore aether_gazebo
+    rosdep update --rosdistro jazzy --ignore-packages aether_gazebo object-tracker && \
+    rosdep install --rosdistro jazzy --from-paths src --ignore-packages aether_gazebo object-tracker --ignore-src -r -y && \
+    colcon build --packages-ignore aether_gazebo object-tracker
 RUN rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash"]
