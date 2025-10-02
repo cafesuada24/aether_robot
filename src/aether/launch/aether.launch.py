@@ -37,6 +37,11 @@ def generate_launch_description() -> LaunchDescription:
         'params',
         'rplidar.yaml',
     )
+    driver_params_file = os.path.join(
+        pkg_share,
+        'params',
+        'driver.yaml',
+    )
 
     twist_mux_node = Node(
         package='twist_mux',
@@ -104,6 +109,13 @@ def generate_launch_description() -> LaunchDescription:
         condition=IfCondition(EqualsSubstitution(sim_mode, 'false')),
     )
 
+    driver_node = Node(
+        package='aether_driver',
+        executable='driver_node',
+        parameters=[driver_params_file],
+        condition=IfCondition(EqualsSubstitution(sim_mode, 'false')),
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -117,13 +129,15 @@ def generate_launch_description() -> LaunchDescription:
                 description='Flag to enable simulation mode',
                 choices=['true', 'false'],
             ),
+            driver_node,
+            rplidar,
+            camera,
+
             twist_mux_node,
             slam_online_async_launch,
             navigation_launch,
-            teleop_twist_joy,
             websocket_node,
             web_video_server,
-            camera,
-            rplidar,
+            teleop_twist_joy,
         ],
     )
