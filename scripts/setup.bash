@@ -27,7 +27,7 @@ echo "Sourcing ROS $ROS_DISTRO underlay environment..."
 source "/opt/ros/$ROS_DISTRO/setup.bash" && echo 'Done.'
 
 echo 'Sourcing workspace overlay environment...'
-source ./install/setup.bash && echo "Done."
+[[ -f ./install/setup.zsh ]] && source ./install/setup.bash && echo "Done."
 
 eval "$(register-python-argcomplete ros2)"
 eval "$(register-python-argcomplete colcon)"
