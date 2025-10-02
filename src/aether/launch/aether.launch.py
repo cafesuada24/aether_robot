@@ -21,7 +21,7 @@ def generate_launch_description() -> LaunchDescription:
 
     pkg_share = get_package_share_directory(PKG_NAME)
     aether_nav_share = get_package_share_directory('aether_navigation')
-    rosbridge_server_share = get_package_share_directory('rosbridge_server')
+    # rosbridge_server_share = get_package_share_directory('rosbridge_server')
     twist_mux_params_file = os.path.join(
         pkg_share,
         'params',
@@ -31,6 +31,11 @@ def generate_launch_description() -> LaunchDescription:
         pkg_share,
         'params',
         'camera.yaml',
+    )
+    rplidar_params_file = os.path.join(
+        pkg_share,
+        'params',
+        'rplidar.yaml',
     )
 
     twist_mux_node = Node(
@@ -91,6 +96,14 @@ def generate_launch_description() -> LaunchDescription:
         condition=IfCondition(EqualsSubstitution(sim_mode, 'false')),
     )
 
+    rplidar = Node(
+        package='rplidar_ros',
+        executable='rplidar_composition',
+        parameters=[rplidar_params_file],
+        remappings=[('scan', 'lidar')],
+        condition=IfCondition(EqualsSubstitution(sim_mode, 'false')),
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -111,5 +124,6 @@ def generate_launch_description() -> LaunchDescription:
             websocket_node,
             web_video_server,
             camera,
+            rplidar,
         ],
     )
