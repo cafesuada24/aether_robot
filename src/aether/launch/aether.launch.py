@@ -6,9 +6,9 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
 )
-from launch.launch_description_source import LaunchDescriptionSource
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import EqualsSubstitution, LaunchConfiguration
 from launch_ros.actions import Node
 
 PKG_NAME = 'aether'
@@ -26,6 +26,11 @@ def generate_launch_description() -> LaunchDescription:
         pkg_share,
         'params',
         'twist_mux.yaml',
+    )
+    camera_params_file = os.path.join(
+        pkg_share,
+        'params',
+        'camera.yaml',
     )
 
     twist_mux_node = Node(
@@ -72,9 +77,18 @@ def generate_launch_description() -> LaunchDescription:
             {'require_enable_button': False},
             {'axis_linear.x': 1},
             {'axis_angular.yaw': 0},
-            {'use_sim_time': True},
+            {'use_sim_time': sim_mode},
         ],
         remappings=[('cmd_vel', 'joy_cmd_vel')],
+    )
+
+    # Hardwares launch
+    camera = Node(
+        package='v4l2_camera',
+        executable='v4l2_camera_node',
+        parameters=[camera_params_file],
+        remappings=[('__ns', '/camera')],
+        condition=IfCondition(EqualsSubstitution(sim_mode, 'false')),
     )
 
     return LaunchDescription(
@@ -96,5 +110,6 @@ def generate_launch_description() -> LaunchDescription:
             teleop_twist_joy,
             websocket_node,
             web_video_server,
+            camera,
         ],
     )

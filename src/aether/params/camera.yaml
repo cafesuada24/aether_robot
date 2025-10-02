@@ -1,0 +1,5 @@
+/v4l2_camera:
+  ros__parameters:
+    image_size: "[640, 480]"
+    camera_frame_id: "front_camera_optical_link"
+    
