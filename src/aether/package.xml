@@ -21,6 +21,7 @@
   <exec_depend>rosbridge_suite</exec_depend>
   <exec_depend>web_video_server</exec_depend>
   <exec_depend>aether_navigation</exec_depend>
+  <exec_depend>rplidar_ros</exec_depend>
 
 
   <test_depend>ament_lint_auto</test_depend>

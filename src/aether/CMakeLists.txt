@@ -16,6 +16,7 @@ find_package(aether_navigation REQUIRED)
 find_package(rosbridge_suite REQUIRED)
 find_package(web_video_server REQUIRED)
 find_package(v4l2_camera REQUIRED)
+find_package(rplidar_ros REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
