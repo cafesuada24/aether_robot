@@ -1,7 +1,6 @@
 #include <aether_driver/serial/serial.h>
 
 #include <aether_interfaces/srv/velocity.hpp>
-#include <algorithm>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -10,11 +9,12 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/service.hpp>
+#include <rclcpp/subscription.hpp>
 #include <rclcpp/utilities.hpp>
-#include <sstream>
 
 #include "aether_driver/arduino.h"
 #include "aether_interfaces/srv/velocity.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 
 class DriverNode : public rclcpp::Node {
  public:
@@ -24,7 +24,11 @@ class DriverNode : public rclcpp::Node {
             "~/drive",
             std::bind(&DriverNode::DriveServiceCallback, this,
                       std::placeholders::_1, std::placeholders::_2),
-            10)} {
+            10)},
+        cmd_vel_sub_{create_subscription<geometry_msgs::msg::TwistStamped>(
+            "cmd_vel", 10,
+            std::bind(&DriverNode::CmdVelCallback, this,
+                      std::placeholders::_1))} {
     declare_parameters();
 
     arduino_ = new aether_driver::Arduino(
@@ -83,12 +87,22 @@ class DriverNode : public rclcpp::Node {
     }
   }
 
+  void CmdVelCallback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
+    RCLCPP_DEBUG(get_logger(), "Driving with speeds: %fm/s, %fm/s",
+                  msg->twist.linear.x, msg->twist.linear.x);
+    arduino_->drive_m_per_sec(msg->twist.linear.x, msg->twist.linear.x);
+  }
+
   aether_driver::Arduino* arduino_;
 
   // Subscriber
 
   // Services
   rclcpp::Service<aether_interfaces::srv::Velocity>::SharedPtr drive_service_;
+
+  // Subsribers
+  rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr
+      cmd_vel_sub_;
 };
 
 int main(int argc, char** argv) {
