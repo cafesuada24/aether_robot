@@ -13,8 +13,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-from ros_gz_bridge.actions import RosGzBridge
-from ros_gz_sim.actions import GzServer
 
 PKG_NAME: str = 'aether_gazebo'
 
@@ -24,7 +22,7 @@ def generate_launch_description() -> LaunchDescription:
     use_sim_time = LaunchConfiguration('use_sim_time')
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
-    aether_share = get_package_share_directory('aether')
+    aether_bringup_share = get_package_share_directory('aether_bringup')
     default_robot_description_path = os.path.join(
         pkg_share,
         'description',
@@ -120,17 +118,6 @@ def generate_launch_description() -> LaunchDescription:
     #     use_composition='True',
     # )
 
-    robot_localization_node = Node(
-        package='robot_localization',
-        executable='ekf_node',
-        name='ekf_node',
-        output='screen',
-        parameters=[
-            os.path.join(pkg_share, 'params', 'ekf.yaml'),
-            {'use_sim_time': use_sim_time},
-        ],
-    )
-
     joint_state_broadcaster_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -143,10 +130,14 @@ def generate_launch_description() -> LaunchDescription:
         arguments=['four_wheel_controller', '--param-file', robot_controllers],
     )
 
-    aether_launch = IncludeLaunchDescription(
+    aether_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(aether_share, 'launch', 'aether.launch.py'),
+            os.path.join(aether_bringup_share, 'launch', 'aether_bringup_launch.py'),
         ),
+        launch_arguments={
+            'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
+            'sim_mode': 'True',
+        }.items(),
     )
 
     delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
@@ -177,6 +168,6 @@ def generate_launch_description() -> LaunchDescription:
             # control_node,
             robot_controller_spawner,
             delay_joint_state_broadcaster_after_robot_controller_spawner,
-            aether_launch,
+            aether_bringup_launch,
         ],
     )
