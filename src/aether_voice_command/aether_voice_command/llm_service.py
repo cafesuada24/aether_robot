@@ -1,0 +1,90 @@
+import os
+
+import rclpy
+from dotenv import load_dotenv
+from geometry_msgs.msg import PoseStamped, TwistStamped
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.node import Node
+from tf2_ros import Buffer, TransformListener
+
+from aether_interfaces.srv import LLMPrompt
+
+from .light_plugins import LightsPlugin
+from .llm.gemini_model import GeminiModel
+from .plugins.navigation_plugins import NavigationPlugin
+
+
+class LLMService(Node):
+    def __init__(self) -> None:
+        super().__init__('llm_service')
+
+        load_dotenv()
+
+        self.__tf_buffer = Buffer()
+        self.__tf_listener = TransformListener(self.__tf_buffer, self)
+        self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10) # pyright: ignore
+        self.__goal_pose_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10) # pyright: ignore
+
+        # self.__queue = Queue[]
+        # self.__executor = executor
+        self.__llm = GeminiModel(
+            api_key=os.environ['GOOGLE_API_KEY'],
+            gemini_model_id='gemini-2.5-flash',
+            logger=self.get_logger(),
+        )
+
+        self.__llm.kernel.add_plugin(
+            LightsPlugin(),
+            plugin_name='Lights',
+        )
+        self.__llm.kernel.add_plugin(
+            NavigationPlugin(
+                self.get_clock(),
+                self.get_logger(),
+                self.__cmd_vel_publisher,
+                self.__goal_pose_publisher,
+                self.__tf_buffer,
+            ),
+            plugin_name='Navigation',
+        )
+
+        self.__srv_callback_group = MutuallyExclusiveCallbackGroup()
+        self.__prompt_service = self.create_service( # pyright: ignore
+            LLMPrompt,
+            'prompt',
+            self.prompt_callback,
+            callback_group=self.__srv_callback_group,
+        )
+
+    def prompt_callback(
+        self,
+        request: LLMPrompt.Request,
+        response: LLMPrompt.Response,
+    ) -> LLMPrompt.Response:
+        if not isinstance(request.prompt, str):  # pyright: ignore
+            self.get_logger().debug('Invalid user input, expected a non empty string.') # pyright: ignore
+            response.response = 'Prompt can not be empty'
+            return response
+
+        response.response = self.__llm.infer(request.prompt)
+
+        return response
+
+
+def main(args: list[str] | None = None) -> None:
+    """Main entry."""
+    rclpy.init(args=args)
+
+    node = LLMService()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

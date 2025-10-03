@@ -1,7 +1,7 @@
 ROS_DISTRO='jazzy'
 PYTHON_VERSION='3.12'
 
-export RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'
+# export RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'
 export GZ_SIM_SYSTEM_PLUGIN_PATH="/opt/ros/${ROS_DISTRO}/lib/"
 export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:/opt/ros/jazzy/share/turtlebot3_gazebo/models"
 

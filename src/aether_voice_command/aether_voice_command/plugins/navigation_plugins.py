@@ -1,3 +1,4 @@
+import math
 from typing import Annotated, Literal
 
 from geometry_msgs.msg import PoseStamped, TwistStamped
@@ -29,18 +30,36 @@ class NavigationPlugin:
 
     def get_current_pose(self) -> tuple[float, float, float]:
         trans = self.__tf_buffer.lookup_transform('map', 'base_footprint', Time())
-        return ( # pyright: ignore
+        return (  # pyright: ignore
             trans.transform.translation.x,
             trans.transform.translation.y,
             trans.transform.translation.z,
         )
+
+    def distance_3d(
+        self, p1: tuple[float, float, float], p2: tuple[float, float, float]
+    ) -> float:
+        return math.sqrt(
+            (p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2 + (p2[2] - p1[2]) ** 2
+        )
+
+    @kernel_function(name='where_am_i')
+    def where_am_i(self) -> tuple[float, float, float] | str:
+        """Return the current position of robot the label or 3D position."""
+        loc = self.get_current_pose()
+        for label, pos in self.__points.items():
+            if self.distance_3d(loc, pos) <= 0.5:
+                return label
+        return loc
 
     @kernel_function(name='save_point')
     def save_point(self, name: str) -> None:
         """Save the current position as name."""
         pose = self.get_current_pose()
         self.__points[name] = pose
-        self.__logger.info(f'Point {name} saved at: {{x: {pose[0]}, y: {pose[1]}, z: {pose[2]}}}')
+        self.__logger.info(
+            f'Point {name} saved at: {{x: {pose[0]}, y: {pose[1]}, z: {pose[2]}}}'
+        )
 
     @kernel_function(name='navigate_to')
     def navigate_to(self, name: str) -> bool:
@@ -57,7 +76,9 @@ class NavigationPlugin:
             self.__logger.info(f"destination {name} doesn't exist")
             return False
         dest_point = self.__points[name]
-        self.__logger.info(f'Moving to {name} at: {{x: {dest_point[0]}, y: {dest_point[1]}, z: {dest_point[2]}}}')
+        self.__logger.info(
+            f'Moving to {name} at: {{x: {dest_point[0]}, y: {dest_point[1]}, z: {dest_point[2]}}}'
+        )
 
         dest_pose = PoseStamped()
         dest_pose.header.frame_id = 'map'

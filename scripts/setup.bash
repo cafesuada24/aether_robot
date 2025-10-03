@@ -1,7 +1,7 @@
 ROS_DISTRO='jazzy'
 PYTHON_VERSION='3.12'
 
-export RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'
+# export RMW_IMPLEMENTATION='rmw_cyclonedds_cpp'
 export GZ_SIM_SYSTEM_PLUGIN_PATH="/opt/ros/${ROS_DISTRO}/lib/"
 export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:/opt/ros/jazzy/share/turtlebot3_gazebo/models"
 
@@ -27,7 +27,7 @@ echo "Sourcing ROS $ROS_DISTRO underlay environment..."
 source "/opt/ros/$ROS_DISTRO/setup.bash" && echo 'Done.'
 
 echo 'Sourcing workspace overlay environment...'
-source ./install/setup.bash && echo "Done."
+[[ -f ./install/setup.zsh ]] && source ./install/setup.bash && echo "Done."
 
 eval "$(register-python-argcomplete ros2)"
 eval "$(register-python-argcomplete colcon)"

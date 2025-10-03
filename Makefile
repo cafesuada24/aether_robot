@@ -6,7 +6,7 @@ BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 SIM_PKG := aether_gazebo
 
-PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether aether_voice_command aether_interfaces
+PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether_bringup aether_voice_command aether_interfaces aether_driver
 
 
 
@@ -35,6 +35,18 @@ launch_sim:
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
 
+build_docker_container: Dockerfile
+	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
+
+run_docker_container:
+	docker run -it --rm --name aether_bot_cont \
+		--network=host \
+		--gpus all \
+		aether-bot:latest \
+		# --device=/dev/ttyUSB0 \
+		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
+shell_attach_docker:
+	docker exec -it aether_bot_cont bash
 #
 # build_bumpgo:
 # 	colcon build $(BUILD_ARGS) \

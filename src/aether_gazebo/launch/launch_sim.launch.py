@@ -7,6 +7,8 @@ from launch.actions import (
     ExecuteProcess,
     IncludeLaunchDescription,
     RegisterEventHandler,
+    TimerAction,
+    timer_action,
 )
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -136,7 +138,7 @@ def generate_launch_description() -> LaunchDescription:
         ),
         launch_arguments={
             'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
-            'sim_mode': 'True',
+            'sim_mode': 'true',
         }.items(),
     )
 

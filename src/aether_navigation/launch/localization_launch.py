@@ -105,7 +105,7 @@ def generate_launch_description() -> LaunchDescription:
 
     declare_container_name_cmd = DeclareLaunchArgument(
         'container_name',
-        default_value='nav2_container',
+        default_value='aether_nav_container',
         description='the name of conatiner that nodes will load in if use composition',
     )
 
