@@ -4,12 +4,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    GroupAction,
     IncludeLaunchDescription,
 )
-from launch.conditions import IfCondition
+from launch.conditions import UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import EqualsSubstitution, LaunchConfiguration
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 PKG_NAME = 'aether_bringup'
@@ -19,7 +18,6 @@ def generate_launch_description() -> LaunchDescription:
     """Generate launch description for aether."""
     pkg_share = get_package_share_directory(PKG_NAME)
     aether_nav_share = get_package_share_directory('aether_navigation')
-    # rosbridge_server_share = get_package_share_directory('rosbridge_server')
 
     cmd_vel_out_topic = LaunchConfiguration('cmd_vel_out_topic')
     sim_mode = LaunchConfiguration('sim_mode')
@@ -69,21 +67,6 @@ def generate_launch_description() -> LaunchDescription:
         'params',
         'twist_mux.yaml',
     )
-    camera_params_file = os.path.join(
-        pkg_share,
-        'params',
-        'camera.yaml',
-    )
-    rplidar_params_file = os.path.join(
-        pkg_share,
-        'params',
-        'rplidar.yaml',
-    )
-    driver_params_file = os.path.join(
-        pkg_share,
-        'params',
-        'driver.yaml',
-    )
 
     twist_mux_node = Node(
         package='twist_mux',
@@ -117,54 +100,11 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     # Hardwares launch
-    camera = Node(
-        package='v4l2_camera',
-        executable='v4l2_camera_node',
-        parameters=[camera_params_file],
-        remappings=[('__ns', '/camera')],
-        condition=IfCondition(EqualsSubstitution(sim_mode, 'False')),
-    )
-
-    rplidar = Node(
-        package='rplidar_ros',
-        executable='rplidar_composition',
-        parameters=[rplidar_params_file],
-        remappings=[('scan', 'lidar')],
-        condition=IfCondition(EqualsSubstitution(sim_mode, 'False')),
-    )
-
-    driver_node = Node(
-        package='aether_driver',
-        executable='driver_node',
-        parameters=[driver_params_file],
-        condition=IfCondition(EqualsSubstitution(sim_mode, 'False')),
-    )
-
-    nav_cmd_group = GroupAction(
-        [
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    os.path.join(
-                        aether_nav_share,
-                        'launch',
-                        'slam_online_async_launch.py',
-                    ),
-                ),
-                launch_arguments={
-                    'use_sim_time': sim_mode,
-                }.items(),
-            ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    os.path.join(aether_nav_share, 'launch', 'navigation_launch.py'),
-                ),
-                launch_arguments={
-                    'use_sim_time': sim_mode,
-                    'auto_start': 'True',
-                    'container_name': 'nav2_container',
-                }.items(),
-            ),
-        ],
+    driver_bringup_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'hardware_bringup_launch.py'),
+        ),
+        condition=UnlessCondition(sim_mode),
     )
 
     nav_bringup_launch = IncludeLaunchDescription(
@@ -187,15 +127,10 @@ def generate_launch_description() -> LaunchDescription:
             declare_use_localization_cmd,
             declare_map_yaml_cmd,
             # Launch nodes
-            driver_node,
-            rplidar,
-            camera,
+            driver_bringup_launch,
             teleop_twist_joy,
             twist_mux_node,
             nav_bringup_launch,
-            # nav_cmd_group,
-            # slam_online_async_launch,
-            # navigation_launch,
             websocket_node,
             web_video_server,
         ],
