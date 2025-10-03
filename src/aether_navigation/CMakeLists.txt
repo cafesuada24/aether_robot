@@ -8,7 +8,11 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(nav2_common REQUIRED)
-find_package(navigation2 REQUIRED)
+find_package(nav2_bringup REQUIRED)
+find_package(nav2_map_server REQUIRED)
+find_package(nav2_lifecycle_manager REQUIRED)
+find_package(nav2_amcl REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
