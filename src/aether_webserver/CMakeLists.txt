@@ -8,10 +8,30 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(AVAHI_CLIENT REQUIRED avahi-client)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+add_executable(service_advertiser_node src/service_advertiser.cpp)
+target_link_libraries(service_advertiser_node
+    ${AVAHI_CLIENT_LIBRARIES}
+)
+ament_target_dependencies(service_advertiser_node
+    "rclcpp"
+)
+
+
+install(TARGETS
+    service_advertiser_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+    DIRECTORY params launch
+    DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -25,8 +45,4 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(
-    DIRECTORY params launch
-    DESTINATION share/${PROJECT_NAME}
-)
 ament_package()
