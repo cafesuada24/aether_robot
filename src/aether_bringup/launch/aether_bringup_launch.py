@@ -6,7 +6,7 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
 )
-from launch.conditions import UnlessCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -25,6 +25,7 @@ def generate_launch_description() -> LaunchDescription:
     slam = LaunchConfiguration('slam')
     use_localization = LaunchConfiguration('use_localization')
     map_yaml = LaunchConfiguration('map')
+    webserver = LaunchConfiguration('webserver')
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
@@ -56,6 +57,13 @@ def generate_launch_description() -> LaunchDescription:
         choices=['True', 'False'],
     )
 
+    declare_webserver_cmd = DeclareLaunchArgument(
+        'webserver',
+        default_value='True',
+        description='Whether to enable web server or not',
+        choices=['True', 'False'],
+    )
+
     nav_bringup_launch_file = os.path.join(
         aether_nav_share,
         'launch',
@@ -76,15 +84,6 @@ def generate_launch_description() -> LaunchDescription:
         parameters=[twist_mux_params_file],
     )
 
-    websocket_node = Node(
-        package='rosbridge_server',
-        executable='rosbridge_websocket',
-    )
-
-    web_video_server = Node(
-        package='web_video_server',
-        executable='web_video_server',
-    )
 
     teleop_twist_joy = Node(
         package='teleop_twist_joy',
@@ -97,6 +96,14 @@ def generate_launch_description() -> LaunchDescription:
             {'use_sim_time': sim_mode},
         ],
         remappings=[('cmd_vel', 'joy_cmd_vel')],
+    )
+
+    # Websocket launch
+    webserver_bringup_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'webserver_bringup_launch.py'),
+        ),
+        condition=IfCondition(webserver),
     )
 
     # Hardwares launch
@@ -126,12 +133,12 @@ def generate_launch_description() -> LaunchDescription:
             declare_slam_cmd,
             declare_use_localization_cmd,
             declare_map_yaml_cmd,
+            declare_webserver_cmd,
             # Launch nodes
             driver_bringup_launch,
             teleop_twist_joy,
             twist_mux_node,
             nav_bringup_launch,
-            websocket_node,
-            web_video_server,
+            webserver_bringup_launch,
         ],
     )
