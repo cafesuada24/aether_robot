@@ -7,11 +7,10 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 from tf2_ros import Buffer, TransformListener
 
+from aether_agent.light_plugins import LightsPlugin
+from aether_agent.llm.gemini_model import GeminiModel
+from aether_agent.plugins.navigation_plugins import NavigationPlugin
 from aether_interfaces.srv import LLMPrompt
-
-from .light_plugins import LightsPlugin
-from .llm.gemini_model import GeminiModel
-from .plugins.navigation_plugins import NavigationPlugin
 
 
 class LLMService(Node):
