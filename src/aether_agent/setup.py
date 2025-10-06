@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'aether_voice_command'
+package_name = 'aether_agent'
 
 setup(
     name=package_name,
