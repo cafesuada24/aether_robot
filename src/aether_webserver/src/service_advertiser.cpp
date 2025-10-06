@@ -44,16 +44,84 @@ class ServiceAdvertiser : public rclcpp::Node {
   int error_{0};
 
   void create_services(AvahiClient *c) {
+    assert(c);
+    if (!group_) {
+      if (!(group_ = avahi_entry_group_new(c, entry_group_callback, this))) {
+        RCLCPP_ERROR(get_logger(), "avahi_entry_group_new() failed: %s",
+                     avahi_strerror(avahi_client_errno(c)));
+        throw std::exception();
+      }
+    }
+
+    if (!avahi_entry_group_is_empty(group_)) {
+      return;
+    }
+
+    RCLCPP_INFO(get_logger(), "Registering service: 'RobotWebserver'");
+
+    int ret{};
+
+    if ((ret = avahi_entry_group_add_service(
+             group_, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, AvahiPublishFlags(0),
+             "RobotWebserver", "_foxglove._tcp", nullptr, nullptr, 5768,
+             nullptr)) < 0) {
+      if (ret == AVAHI_ERR_COLLISION) {
+        goto collision;
+      }
+
+      RCLCPP_ERROR(get_logger(), "Failed to add _foxglove._tcp service: %s\n",
+                   avahi_strerror(ret));
+      goto fail;
+    }
+
+    if ((ret = avahi_entry_group_commit(group_)) < 0) {
+      RCLCPP_ERROR(get_logger(), "Failed to commit entry group: %s\n",
+                   avahi_strerror(ret));
+      goto fail;
+    }
+    return;
+
+  collision:
+    RCLCPP_ERROR(get_logger(), "Service name collision");
+    return;
+  fail:
+    avahi_simple_poll_quit(simple_poll_);
   }
 
   static void entry_group_callback(AvahiEntryGroup *g,
                                    AvahiEntryGroupState state,
                                    AVAHI_GCC_UNUSED void *userdata) {
+    auto *self{static_cast<ServiceAdvertiser *>(userdata)};
+
+    assert(g == self->group_ || self->group_ == nullptr);
+
+    self->group_ = g;
+
+    switch (state) {
+      case AVAHI_ENTRY_GROUP_ESTABLISHED:
+        /* The entry group has been established successfully */
+        RCLCPP_ERROR(self->get_logger(),
+                     "Service 'RobotWebserver' successfully established.\n");
+        break;
+      case AVAHI_ENTRY_GROUP_COLLISION: {
+        RCLCPP_ERROR(self->get_logger(), "Service name collision");
+        break;
+      }
+      case AVAHI_ENTRY_GROUP_FAILURE:
+        RCLCPP_ERROR(self->get_logger(), "Entry group failure: %s\n",
+                     avahi_strerror(
+                         avahi_client_errno(avahi_entry_group_get_client(g))));
+        /* Some kind of failure happened while we were registering our services
+         */
+        avahi_simple_poll_quit(self->simple_poll_);
+        break;
+      case AVAHI_ENTRY_GROUP_UNCOMMITED:
+      case AVAHI_ENTRY_GROUP_REGISTERING:;
+    }
   }
 
   static void client_callback(AvahiClient *c, AvahiClientState state,
-                              void *userdata) {
-  }
+                              void *userdata) {}
 };
 
 int main(const int argc, const char **argv) {
