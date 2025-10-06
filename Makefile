@@ -6,7 +6,7 @@ BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 SIM_PKG := aether_gazebo
 
-PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether_bringup aether_voice_command aether_interfaces aether_driver
+PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether_bringup aether_voice_command aether_interfaces aether_driver aether_webserver
 
 
 
