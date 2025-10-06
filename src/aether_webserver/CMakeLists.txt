@@ -9,6 +9,9 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(foxglove_bridge REQUIRED)
+find_package(web_video_server REQUIRED)
+# find_package(rosbridge_suite REQUIRED)
 pkg_check_modules(AVAHI_CLIENT REQUIRED avahi-client)
 # uncomment the following section in order to fill in
 # further dependencies manually.
