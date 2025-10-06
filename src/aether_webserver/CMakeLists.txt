@@ -14,17 +14,17 @@ pkg_check_modules(AVAHI_CLIENT REQUIRED avahi-client)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(service_advertiser_node src/service_advertiser.cpp)
-target_link_libraries(service_advertiser_node
+add_executable(service_advertiser src/service_advertiser.cpp)
+target_link_libraries(service_advertiser
     ${AVAHI_CLIENT_LIBRARIES}
 )
-ament_target_dependencies(service_advertiser_node
+ament_target_dependencies(service_advertiser
     "rclcpp"
 )
 
 
 install(TARGETS
-    service_advertiser_node
+    service_advertiser
     DESTINATION lib/${PROJECT_NAME}
 )
 
