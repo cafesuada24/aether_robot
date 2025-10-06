@@ -18,6 +18,7 @@ def generate_launch_description() -> LaunchDescription:
     """Generate launch description for aether."""
     pkg_share = get_package_share_directory(PKG_NAME)
     aether_nav_share = get_package_share_directory('aether_navigation')
+    aether_webserver_share = get_package_share_directory('aether_webserver')
 
     cmd_vel_out_topic = LaunchConfiguration('cmd_vel_out_topic')
     sim_mode = LaunchConfiguration('sim_mode')
@@ -101,7 +102,7 @@ def generate_launch_description() -> LaunchDescription:
     # Websocket launch
     webserver_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_share, 'launch', 'webserver_bringup_launch.py'),
+            os.path.join(aether_webserver_share, 'launch', 'webserver_bringup_launch.py'),
         ),
         condition=IfCondition(webserver),
     )
