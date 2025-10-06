@@ -11,9 +11,11 @@
 class ServiceAdvertiser : public rclcpp::Node {
  public:
   ServiceAdvertiser() : Node("service_advertiser") {
+    declare_parameters();
+
     if (!(simple_poll_ = avahi_simple_poll_new())) {
       RCLCPP_ERROR(get_logger(), "Failed to create simple poll object.");
-      throw std::exception();
+      goto fail;
     }
     client_ =
         avahi_client_new(avahi_simple_poll_get(simple_poll_),
@@ -21,12 +23,37 @@ class ServiceAdvertiser : public rclcpp::Node {
     if (!client_) {
       RCLCPP_ERROR(get_logger(), "Failed to create client: %s.",
                    avahi_strerror(error_));
-      throw std::exception();
+      goto fail;
     }
+
+    avahi_thread_ = std::thread(&ServiceAdvertiser::run_avahi_loop, this);
+
+    return;
+  fail:
+    if (avahi_thread_.joinable()) {
+      if (simple_poll_) {
+        avahi_simple_poll_quit(simple_poll_);
+      }
+      avahi_thread_.join();
+    }
+    if (client_) {
+      avahi_client_free(client_);
+    }
+
+    if (simple_poll_) {
+      avahi_simple_poll_free(simple_poll_);
+    }
+
+    throw std::runtime_error("ServiceAdvertiser initialization failed.");
   }
 
-  ~ServiceAdvertiser() {
-    avahi_simple_poll_quit(simple_poll_);
+  ~ServiceAdvertiser() override {
+    if (avahi_thread_.joinable()) {
+      if (simple_poll_) {
+        avahi_simple_poll_quit(simple_poll_);
+      }
+      avahi_thread_.join();
+    }
     if (client_) {
       avahi_client_free(client_);
     }
@@ -40,8 +67,17 @@ class ServiceAdvertiser : public rclcpp::Node {
   AvahiSimplePoll *simple_poll_{nullptr};
   AvahiClient *client_{nullptr};
   AvahiEntryGroup *group_{nullptr};
-  std::thread avahi_thread_{};
+  std::thread avahi_thread_;
   int error_{0};
+
+  void declare_parameters() {}
+
+  void run_avahi_loop() {
+    assert(simple_poll_);
+    RCLCPP_INFO(get_logger(), "Starting Avahi simple poll loop...");
+    avahi_simple_poll_loop(simple_poll_);
+    error_ = 0;
+  }
 
   void create_services(AvahiClient *c) {
     assert(c);
@@ -63,7 +99,7 @@ class ServiceAdvertiser : public rclcpp::Node {
 
     if ((ret = avahi_entry_group_add_service(
              group_, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, AvahiPublishFlags(0),
-             "RobotWebserver", "_foxglove._tcp", nullptr, nullptr, 5768,
+             "RobotWebserver", "_foxglove._tcp", nullptr, nullptr, 8765,
              nullptr)) < 0) {
       if (ret == AVAHI_ERR_COLLISION) {
         goto collision;
@@ -100,8 +136,8 @@ class ServiceAdvertiser : public rclcpp::Node {
     switch (state) {
       case AVAHI_ENTRY_GROUP_ESTABLISHED:
         /* The entry group has been established successfully */
-        RCLCPP_ERROR(self->get_logger(),
-                     "Service 'RobotWebserver' successfully established.\n");
+        RCLCPP_INFO(self->get_logger(),
+                    "Service 'RobotWebserver' successfully established.\n");
         break;
       case AVAHI_ENTRY_GROUP_COLLISION: {
         RCLCPP_ERROR(self->get_logger(), "Service name collision");
@@ -130,8 +166,8 @@ class ServiceAdvertiser : public rclcpp::Node {
         self->create_services(c);
         break;
       case AVAHI_CLIENT_FAILURE:
-        fprintf(stderr, "Client failure: %s\n",
-                avahi_strerror(avahi_client_errno(c)));
+        RCLCPP_ERROR(self->get_logger(), "Client failure: %s\n",
+                     avahi_strerror(avahi_client_errno(c)));
         avahi_simple_poll_quit(self->simple_poll_);
         break;
       case AVAHI_CLIENT_S_COLLISION:
@@ -152,10 +188,9 @@ class ServiceAdvertiser : public rclcpp::Node {
 
 int main(const int argc, const char **argv) {
   rclcpp::init(argc, argv);
-
   try {
     rclcpp::spin(std::make_shared<ServiceAdvertiser>());
-  } catch (const std::exception &ex) {
+  } catch (const std::exception& ex) {
     RCLCPP_ERROR(rclcpp::get_logger("service_advertiser"), "%s", ex.what());
   }
   rclcpp::shutdown();
