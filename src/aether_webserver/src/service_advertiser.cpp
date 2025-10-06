@@ -121,7 +121,33 @@ class ServiceAdvertiser : public rclcpp::Node {
   }
 
   static void client_callback(AvahiClient *c, AvahiClientState state,
-                              void *userdata) {}
+                              void *userdata) {
+    assert(c);
+
+    auto *self{static_cast<ServiceAdvertiser *>(userdata)};
+    switch (state) {
+      case AVAHI_CLIENT_S_RUNNING:
+        self->create_services(c);
+        break;
+      case AVAHI_CLIENT_FAILURE:
+        fprintf(stderr, "Client failure: %s\n",
+                avahi_strerror(avahi_client_errno(c)));
+        avahi_simple_poll_quit(self->simple_poll_);
+        break;
+      case AVAHI_CLIENT_S_COLLISION:
+        /* Let's drop our registered services. When the server is back
+         * in AVAHI_SERVER_RUNNING state we will register them
+         * again with the new host name. */
+      case AVAHI_CLIENT_S_REGISTERING:
+        /* The server records are now being established. This
+         * might be caused by a host name change. We need to wait
+         * for our own records to register until the host name is
+         * properly esatblished. */
+        if (self->group_) avahi_entry_group_reset(self->group_);
+        break;
+      case AVAHI_CLIENT_CONNECTING:;
+    }
+  }
 };
 
 int main(const int argc, const char **argv) {
