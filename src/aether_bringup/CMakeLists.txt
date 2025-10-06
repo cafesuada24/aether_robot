@@ -14,11 +14,9 @@ find_package(twist_mux REQUIRED)
 find_package(teleop_twist_joy REQUIRED)
 find_package(aether_navigation REQUIRED)
 find_package(aether_driver REQUIRED)
-# find_package(rosbridge_suite REQUIRED)
-find_package(web_video_server REQUIRED)
+find_package(aether_webserver REQUIRED)
 find_package(v4l2_camera REQUIRED)
 find_package(rplidar_ros REQUIRED)
-find_package(foxglove_bridge REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
