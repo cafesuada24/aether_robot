@@ -8,29 +8,30 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(aether_interfaces)
-
-include_directories(include)
+find_package(aether_interfaces REQUIRED)
 
 add_library(serial_lib SHARED
   src/lib/serial/serial.cc
   src/lib/serial/impl/unix.cc
   src/lib/serial/impl/win.cc
 )
-target_include_directories(serial_lib PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(serial_lib PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 
 add_library(arduino_lib SHARED
-  src/lib/arduino.cc
-)
+  src/lib/arduino.cc)
+target_include_directories(arduino_lib PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(arduino_lib serial_lib)
-target_include_directories(arduino_lib PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 add_executable(driver_node src/nodes/driver_node.cpp)
-target_link_libraries(driver_node serial_lib arduino_lib)
-ament_target_dependencies(
-  driver_node
+target_link_libraries(driver_node
+  serial_lib
+  arduino_lib
+)
+ament_target_dependencies(driver_node
   "rclcpp"
   "aether_interfaces"
 )
@@ -48,10 +49,14 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS
+  arduino_lib
+  serial_lib
+  DESTINATION lib
+)
+
+install(TARGETS
   driver_node
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
