@@ -6,7 +6,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import FrontendLaunchDescriptionSource
 from launch_ros.actions import Node
 
-PKG_NAME = 'aether_bringup'
+PKG_NAME = 'aether_webserver'
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -25,7 +25,7 @@ def generate_launch_description() -> LaunchDescription:
                 foxglove_bridge_share_dir,
                 'launch',
                 'foxglove_bridge_launch.xml',
-            )
+            ),
         ),
         launch_arguments={'port': '8765'}.items(),
     )
@@ -34,9 +34,16 @@ def generate_launch_description() -> LaunchDescription:
         package='web_video_server',
         executable='web_video_server',
     )
+
+    service_advertiser_node = Node(
+        package=PKG_NAME,
+        executable='service_advertiser',
+        output='screen',
+    )
     ld = LaunchDescription()
 
     ld.add_action(foxglove_bridge_launch)
     ld.add_action(web_video_server)
+    ld.add_action(service_advertiser_node)
 
     return ld
