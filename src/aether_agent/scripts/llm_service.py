@@ -1,5 +1,6 @@
 import os
 
+import chromadb
 import rclpy
 from dotenv import load_dotenv
 from geometry_msgs.msg import PoseStamped, TwistStamped
@@ -23,6 +24,13 @@ class LLMService(Node):
         self.__tf_listener = TransformListener(self.__tf_buffer, self)
         self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10) # pyright: ignore
         self.__goal_pose_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10) # pyright: ignore
+        self.__srv_callback_group = MutuallyExclusiveCallbackGroup()
+        self.__prompt_service = self.create_service( # pyright: ignore
+            LLMPrompt,
+            'prompt',
+            self.prompt_callback,
+            callback_group=self.__srv_callback_group,
+        )
 
         # self.__queue = Queue[]
         # self.__executor = executor
@@ -36,24 +44,20 @@ class LLMService(Node):
             LightsPlugin(),
             plugin_name='Lights',
         )
+
+        self.__db_client = chromadb.PersistentClient()
         self.__llm.kernel.add_plugin(
             NavigationPlugin(
+                self.__db_client,
                 self.get_clock(),
-                self.get_logger(),
                 self.__cmd_vel_publisher,
                 self.__goal_pose_publisher,
                 self.__tf_buffer,
+                logger=self.get_logger(),
             ),
             plugin_name='Navigation',
         )
 
-        self.__srv_callback_group = MutuallyExclusiveCallbackGroup()
-        self.__prompt_service = self.create_service( # pyright: ignore
-            LLMPrompt,
-            'prompt',
-            self.prompt_callback,
-            callback_group=self.__srv_callback_group,
-        )
 
     def prompt_callback(
         self,
