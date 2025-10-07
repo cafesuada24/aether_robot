@@ -80,6 +80,10 @@ class NavigationPlugin:
     def distance_2d(self, p1: tuple[float, float], p2: tuple[float, float]) -> float:
         return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
+    def get_locations(self) -> list[str]:
+        """Return saved locations."""
+        return self.__collection.get()['documents'] or []
+
     @kernel_function(name='where_am_i')
     def where_am_i(self) -> tuple[float, float] | str:
         """Return the current position of robot the label or 3D position."""
@@ -88,8 +92,12 @@ class NavigationPlugin:
         if all_points['documents'] is None or all_points['metadatas'] is None:
             return loc
         for doc, meta in zip(
-            all_points['documents'], all_points['metadatas'], strict=True
+            all_points['documents'],
+            all_points['metadatas'],
+            strict=True,
         ):
+            assert isinstance(meta['x'], float)
+            assert isinstance(meta['y'], float)
             if self.distance_2d(loc, (meta['x'], meta['y'])) <= 0.5:
                 return doc
         return loc
@@ -106,7 +114,7 @@ class NavigationPlugin:
             metadatas=[{'x': pose[0], 'y': pose[1]}],
         )
         self.__logger.info(  # pyright: ignore
-            f'Point {name} saved at: {{x: {pose[0]}, y: {pose[1]}, z: {pose[2]}}}',
+            f'Point {name} saved at: {{x: {pose[0]}, y: {pose[1]}}}',
         )
 
     @kernel_function(name='navigate_to')
@@ -145,8 +153,8 @@ class NavigationPlugin:
             query_results['metadatas'][0][0]['y'],
         )
 
-        self.__logger.info(
-            f'Moving to {name} at: {{x: {dest_point[0]}, y: {dest_point[1]}}}'
+        self.__logger.info(  # pyright: ignore
+            f'Moving to {name} at: (x: {dest_point[0]}, y: {dest_point[1]})',
         )
 
         dest_pose = PoseStamped()
