@@ -22,10 +22,12 @@ class LLMService(Node):
 
         self.__tf_buffer = Buffer()
         self.__tf_listener = TransformListener(self.__tf_buffer, self)
-        self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10) # pyright: ignore
-        self.__goal_pose_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10) # pyright: ignore
+        self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10)  # pyright: ignore
+        self.__goal_pose_publisher = self.create_publisher(
+            PoseStamped, '/goal_pose', 10
+        )  # pyright: ignore
         self.__srv_callback_group = MutuallyExclusiveCallbackGroup()
-        self.__prompt_service = self.create_service( # pyright: ignore
+        self.__prompt_service = self.create_service(  # pyright: ignore
             LLMPrompt,
             'prompt',
             self.prompt_callback,
@@ -45,19 +47,20 @@ class LLMService(Node):
             plugin_name='Lights',
         )
 
-        self.__db_client = chromadb.PersistentClient()
-        self.__llm.kernel.add_plugin(
-            NavigationPlugin(
-                self.__db_client,
-                self.get_clock(),
-                self.__cmd_vel_publisher,
-                self.__goal_pose_publisher,
-                self.__tf_buffer,
-                logger=self.get_logger(),
-            ),
-            plugin_name='Navigation',
+        self.__nav_plugin = NavigationPlugin(
+            self.__db_client,
+            self.get_clock(),
+            self.__cmd_vel_publisher,
+            self.__goal_pose_publisher,
+            self.__tf_buffer,
+            logger=self.get_logger(),
         )
 
+        self.__db_client = chromadb.PersistentClient()
+        self.__llm.kernel.add_plugin(
+            self.__nav_plugin,
+            plugin_name='Navigation',
+        )
 
     def prompt_callback(
         self,
@@ -65,7 +68,7 @@ class LLMService(Node):
         response: LLMPrompt.Response,
     ) -> LLMPrompt.Response:
         if not isinstance(request.prompt, str):  # pyright: ignore
-            self.get_logger().debug('Invalid user input, expected a non empty string.') # pyright: ignore
+            self.get_logger().debug('Invalid user input, expected a non empty string.')  # pyright: ignore
             response.response = 'Prompt can not be empty'
             return response
 
