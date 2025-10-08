@@ -146,7 +146,7 @@ def generate_launch_description() -> LaunchDescription:
                     ),
                 ),
                 launch_arguments={
-                    'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
+                    # 'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
                     'sim_mode': 'True',
                 }.items(),
             ),
