@@ -80,9 +80,21 @@ class NavigationPlugin:
     def distance_2d(self, p1: tuple[float, float], p2: tuple[float, float]) -> float:
         return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
-    def get_locations(self) -> list[str]:
+    def get_locations(self) -> list[tuple[str, tuple[float, float]]]:
         """Return saved locations."""
-        return self.__collection.get()['documents'] or []
+        get_results = self.__collection.get()
+        if not get_results['ids']:
+            return []
+
+        return [
+            (doc, (meta['x'], meta['y']))
+            for doc, meta in zip(
+                get_results['documents'] or [],
+                get_results['metadatas'] or [],
+                strict=True,
+            )
+            if isinstance(meta['x'], float) and isinstance(meta['y'], float)
+        ]
 
     @kernel_function(name='where_am_i')
     def where_am_i(self) -> tuple[float, float] | str:

@@ -3,7 +3,7 @@ import os
 import chromadb
 import rclpy
 from dotenv import load_dotenv
-from geometry_msgs.msg import PoseStamped, TwistStamped
+from geometry_msgs.msg import Point, PoseStamped, TwistStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 from tf2_ros import Buffer, TransformListener
@@ -11,7 +11,8 @@ from tf2_ros import Buffer, TransformListener
 from aether_agent.light_plugins import LightsPlugin
 from aether_agent.llm.gemini_model import GeminiModel
 from aether_agent.plugins.navigation_plugins import NavigationPlugin
-from aether_interfaces.srv import LLMPrompt
+from aether_interfaces.msg import Waypoint
+from aether_interfaces.srv import GetWaypoints, LLMPrompt
 
 
 class LLMService(Node):
@@ -23,7 +24,7 @@ class LLMService(Node):
         self.__tf_buffer = Buffer()
         self.__tf_listener = TransformListener(self.__tf_buffer, self)
         self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10)  # pyright: ignore
-        self.__goal_pose_publisher = self.create_publisher(
+        self.__goal_pose_publisher = self.create_publisher(  # pyright: ignore
             PoseStamped, '/goal_pose', 10
         )  # pyright: ignore
         self.__srv_callback_group = MutuallyExclusiveCallbackGroup()
@@ -31,6 +32,12 @@ class LLMService(Node):
             LLMPrompt,
             'prompt',
             self.prompt_callback,
+            callback_group=self.__srv_callback_group,
+        )
+        self.__dest_service = self.create_service(  # pyright: ignore
+            GetWaypoints,
+            'get_waypoints',
+            self.__get_waypoints_callback,
             callback_group=self.__srv_callback_group,
         )
 
@@ -47,6 +54,7 @@ class LLMService(Node):
             plugin_name='Lights',
         )
 
+        self.__db_client = chromadb.PersistentClient()
         self.__nav_plugin = NavigationPlugin(
             self.__db_client,
             self.get_clock(),
@@ -55,12 +63,20 @@ class LLMService(Node):
             self.__tf_buffer,
             logger=self.get_logger(),
         )
-
-        self.__db_client = chromadb.PersistentClient()
         self.__llm.kernel.add_plugin(
             self.__nav_plugin,
             plugin_name='Navigation',
         )
+
+    def __get_waypoints_callback(
+        self, request: GetWaypoints.Request, response: GetWaypoints.Response
+    ) -> GetWaypoints.Response:
+        locs = self.__nav_plugin.get_locations()
+        response.waypoints = [
+            Waypoint(name=name, coordinate=Point(x=x, y=y, z=0.0))
+            for name, (x, y) in locs
+        ]
+        return response
 
     def prompt_callback(
         self,
