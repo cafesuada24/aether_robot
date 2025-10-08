@@ -98,6 +98,9 @@ def generate_launch_description() -> LaunchDescription:
         PythonLaunchDescriptionSource(
             os.path.join(aether_webserver_share, 'launch', 'webserver_bringup_launch.py'),
         ),
+        launch_arguments={
+            'use_sim_time': sim_mode,
+        }.items(),
         condition=IfCondition(webserver),
     )
 
