@@ -11,7 +11,7 @@ from tf2_ros import Buffer, TransformListener
 from aether_agent.light_plugins import LightsPlugin
 from aether_agent.llm.gemini_model import GeminiModel
 from aether_agent.plugins.navigation_plugins import NavigationPlugin
-from aether_interfaces.msg._waypoint import Waypoint
+from aether_interfaces.msg import Waypoint
 from aether_interfaces.srv import GetWaypoints, LLMPrompt
 
 
