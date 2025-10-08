@@ -5,6 +5,7 @@ from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
     ExecuteProcess,
+    GroupAction,
     IncludeLaunchDescription,
     RegisterEventHandler,
     TimerAction,
@@ -13,7 +14,7 @@ from launch.actions import (
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
-from launch_ros.actions import Node
+from launch_ros.actions import Node, SetRemap
 from launch_ros.parameter_descriptions import ParameterValue
 
 PKG_NAME: str = 'aether_gazebo'
@@ -132,14 +133,24 @@ def generate_launch_description() -> LaunchDescription:
         arguments=['four_wheel_controller', '--param-file', robot_controllers],
     )
 
-    aether_bringup_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(aether_bringup_share, 'launch', 'aether_bringup_launch.py'),
-        ),
-        launch_arguments={
-            'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
-            'sim_mode': 'True',
-        }.items(),
+    aether_bringup_launch = GroupAction(
+        [
+            SetRemap('/odom', '/four_wheel_controller/odom'),
+            SetRemap('/cmd_vel', '/four_wheel_controller/cmd_vel'),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        aether_bringup_share,
+                        'launch',
+                        'aether_bringup_launch.py',
+                    ),
+                ),
+                launch_arguments={
+                    'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
+                    'sim_mode': 'True',
+                }.items(),
+            ),
+        ],
     )
 
     delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
