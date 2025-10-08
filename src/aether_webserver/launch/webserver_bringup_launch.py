@@ -4,6 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import FrontendLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 PKG_NAME = 'aether_webserver'
@@ -12,6 +13,8 @@ PKG_NAME = 'aether_webserver'
 def generate_launch_description() -> LaunchDescription:
     """Generate launch description for web servers."""
     # pkg_share = get_package_share_directory(PKG_NAME)
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
     foxglove_bridge_share_dir = get_package_share_directory('foxglove_bridge')
 
     # websocket_node = Node(
@@ -27,7 +30,11 @@ def generate_launch_description() -> LaunchDescription:
                 'foxglove_bridge_launch.xml',
             ),
         ),
-        launch_arguments={'port': '8765'}.items(),
+        launch_arguments={
+            'port': '8765',
+            'use_sim_time': use_sim_time,
+            'include_hidden': 'True',
+        }.items(),
     )
 
     web_video_server = Node(
