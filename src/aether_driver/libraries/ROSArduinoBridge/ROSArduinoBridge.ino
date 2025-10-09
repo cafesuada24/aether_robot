@@ -18,6 +18,7 @@
     Software License Agreement (BSD License)
 
     Copyright (c) 2012, Patrick Goebel.
+    Copyright (c) 2025, Ha Ho Sy Minh.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
