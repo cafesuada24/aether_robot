@@ -3,6 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
+    AppendEnvironmentVariable,
     DeclareLaunchArgument,
     ExecuteProcess,
     GroupAction,
@@ -26,10 +27,10 @@ def generate_launch_description() -> LaunchDescription:
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
     aether_bringup_share = get_package_share_directory('aether_bringup')
+    aether_description_share = get_package_share_directory('aether_description')
     default_robot_description_path = os.path.join(
-        pkg_share,
-        'description',
-        'robot',
+        aether_description_share,
+        'sdf',
         'robot.sdf',
     )
     bridge_config_path = os.path.join(pkg_share, 'config', 'bridge.yaml')

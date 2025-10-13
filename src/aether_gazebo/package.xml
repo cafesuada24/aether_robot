@@ -31,13 +31,14 @@
   <exec_depend>xacro</exec_depend>
   <exec_depend>navigation2</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>aether_description</exec_depend>
+  <exec_depend>aether_bringup</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
-
     <gazebo_ros gazebo_model_path="${prefix}/models" />
   </export>
 </package>
