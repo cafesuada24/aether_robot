@@ -10,6 +10,8 @@
 #define PIN_MODE       'c'
 #define DIGITAL_READ   'd'
 #define READ_ENCODERS  'e'
+#define READ_MOTOR_SPEEDS 'f'
+#define SET_SAFETY_MODE 'g'
 #define MOTOR_SPEEDS   'm'
 #define MOTOR_RAW_PWM  'o'
 #define PING           'p'

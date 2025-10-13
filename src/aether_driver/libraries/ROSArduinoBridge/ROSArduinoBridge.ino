@@ -64,10 +64,12 @@
    // #define ARDUINO_ENC_COUNTER
    #define ARDUINO_SINGLE_CHANNEL_ENC_COUNTER
 
-    constexpr int resetIntervalMs {1000};
-    unsigned long lastPrint {0};
+    constexpr int updateIntervalMs {1000};
+    unsigned long lastUpdate {0};
    /* L298 Motor driver*/
    #define L298_MOTOR_DRIVER
+
+   #define USE_ULTRASONIC_SAFETY
 #endif
 
 //#define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
@@ -201,6 +203,8 @@ int runCommand() {
 #endif
     
 #ifdef USE_BASE
+  case SET_SAFETY_MODE:
+    break;
   case READ_ENCODERS:
     Serial.print(readEncoder(LEFT));
     Serial.print(" ");
@@ -210,6 +214,9 @@ int runCommand() {
     resetEncoders();
     resetPID();
     Serial.println("OK");
+    break;
+  case READ_MOTOR_SPEEDS:
+    Serial.print(getMotorSpeedMPerSec(LEFT)); Serial.print(' '); Serial.println(getMotorSpeedMPerSec(RIGHT));
     break;
   case MOTOR_SPEEDS:
     /* Reset the auto stop timer */
@@ -254,6 +261,14 @@ int runCommand() {
 void setup() {
   Serial.begin(BAUDRATE);
 
+#ifdef USE_ULTRASONIC_SAFETY
+  pinMode(TRIG_PIN_1, OUTPUT);
+  pinMode(ECHO_PIN_1, INPUT);
+  // digitalWrite(TRIG_PIN_1, LOW);
+  // digitalWrite(ECHO_PIN_1, LOW);
+  pinMode(TRIG_PIN_2, OUTPUT);
+  pinMode(ECHO_PIN_2, INPUT);
+#endif
 // Initialize the motor controller if used */
 #ifdef USE_BASE
   #ifdef ARDUINO_ENC_COUNTER
@@ -363,16 +378,31 @@ void loop() {
     }
   }
 
+#ifdef USE_ULTRASONIC_SAFETY
+  
+  // Serial.print(distanceCm1); Serial.print(' '); Serial.println(distanceCm2);
+#ifdef L298_MOTOR_DRIVER
+  float distanceCm1 = measureDistance(TRIG_PIN_1, ECHO_PIN_1);
+  float distanceCm2 = measureDistance(TRIG_PIN_2, ECHO_PIN_2);
+  setForceStop(distanceCm1 >= 3.5 || distanceCm2 >= 3.5);
+#endif
+  // Serial.print("Sensor 1 Distance: ");
+  // Serial.print(distanceCm1);
+  // Serial.println(" cm");
+
+  // // Read Sensor 2
+  // distanceCm2 = measureDistance(TRIG_PIN_2, ECHO_PIN_2);
+  // Serial.print("Sensor 2 Distance: ");
+  // Serial.print(distanceCm2);
+  // Serial.println(" cm");
+#endif
+
 #ifdef ARDUINO_SINGLE_CHANNEL_ENC_COUNTER
 
 const auto now{ millis() };
-if (now - lastPrint >= resetIntervalMs) {
-  const auto leftSpd {getMotorSpeedMPerSec(LEFT)};
-  const auto rightSpd {getMotorSpeedMPerSec(RIGHT)};
-  if (leftSpd != 0.0 || rightSpd != 0.0) {
-    Serial.print("Speed: "); Serial.print(leftSpd); Serial.print(" m/s, "); Serial.print(rightSpd); Serial.println(" m/s");
-  } 
-  lastPrint = now;
+if (now - lastUpdate >= updateIntervalMs) {
+  updateMotorSpeed();
+  lastUpdate = now;
 }  
 
 #endif

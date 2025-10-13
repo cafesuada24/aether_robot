@@ -56,12 +56,26 @@
     setMotorSpeed(RIGHT, rightSpeed);
   }
 #elif defined L298_MOTOR_DRIVER
+  volatile bool force_stop {false};
+
+  void setForceStop(bool value) {
+    force_stop = value;  
+    if (force_stop) {
+      setMotorSpeeds(0, 0);
+    }
+  }
+
   void initMotorController() {
     digitalWrite(RIGHT_MOTOR_ENABLE, HIGH);
     digitalWrite(LEFT_MOTOR_ENABLE, HIGH);
   }
   
   void setMotorSpeed(int i, int spd) {
+    // if (force_stop) {
+    //   analogWrite(LEFT_MOTOR_FORWARD, 0); analogWrite(LEFT_MOTOR_BACKWARD, 0);
+    //   analogWrite(RIGHT_MOTOR_FORWARD, 0); analogWrite(RIGHT_MOTOR_BACKWARD, 0);
+    //   return;
+    // }
     unsigned char reverse = 0;
   
     if (spd < 0)
@@ -84,6 +98,10 @@
   
   void setMotorSpeeds(int leftSpeed, int rightSpeed) {
     // Serial.print("motor speed set: "); Serial.print(leftSpeed); Serial.print(" "); Serial.println(rightSpeed);
+    if (force_stop) {
+      leftSpeed = -70;
+      rightSpeed = -70;
+    }
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
