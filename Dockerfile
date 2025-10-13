@@ -15,7 +15,7 @@ COPY ./requirements.txt ./
 
 RUN source ./scripts/setup.bash && \
     rosdep update --rosdistro jazzy && \
-    rosdep install --rosdistro jazzy --from-paths src --ignore-packages aether_gazebo object_tracker --ignore-src -r -y && \
+    rosdep install --rosdistro jazzy --from-paths src -i aether_gazebo object_tracker -r -y && \
     colcon build --packages-ignore aether_gazebo object_tracker
 
 RUN rm -rf /var/lib/apt/lists/*
