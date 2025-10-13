@@ -14,17 +14,19 @@ find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(gz_ros2_control REQUIRED)
+find_package(aether_description REQUIRED)
+find_package(aether_bringup REQUIRED)
 
-add_executable(usb_cam_preprocessor src/usb_cam_preprocessor.cpp)
-ament_target_dependencies(
-  usb_cam_preprocessor
-  "rclcpp"
-  "sensor_msgs"
-  "std_msgs"
-  "cv_bridge"
-  "OpenCV"
-  "image_transport"
-)
+# add_executable(usb_cam_preprocessor src/usb_cam_preprocessor.cpp)
+# ament_target_dependencies(
+#   usb_cam_preprocessor
+#   "rclcpp"
+#   "sensor_msgs"
+#   "std_msgs"
+#   "cv_bridge"
+#   "OpenCV"
+#   "image_transport"
+# )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -38,15 +40,15 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(TARGETS
-    usb_cam_preprocessor
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib/${PROJECT_NAME}
-)
+# install(TARGETS
+#     usb_cam_preprocessor
+#     ARCHIVE DESTINATION lib
+#     LIBRARY DESTINATION lib
+#     RUNTIME DESTINATION lib/${PROJECT_NAME}
+# )
 
 install(
-  DIRECTORY config description launch rviz params worlds models
+  DIRECTORY config launch rviz params worlds models
   DESTINATION share/${PROJECT_NAME}
 )
 
