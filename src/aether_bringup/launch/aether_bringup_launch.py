@@ -20,7 +20,6 @@ def generate_launch_description() -> LaunchDescription:
     aether_nav_share = get_package_share_directory('aether_navigation')
     aether_webserver_share = get_package_share_directory('aether_webserver')
 
-    cmd_vel_out_topic = LaunchConfiguration('cmd_vel_out_topic')
     sim_mode = LaunchConfiguration('sim_mode')
 
     slam = LaunchConfiguration('slam')
@@ -32,11 +31,6 @@ def generate_launch_description() -> LaunchDescription:
         'map',
         default_value=os.path.join(pkg_share, 'map', 'my_map.yaml'),
         description='Full path to map yaml file to load',
-    )
-    declare_cmd_out_vel_topic = DeclareLaunchArgument(
-        name='cmd_vel_out_topic',
-        default_value='cmd_vel',
-        description='Topic that receives twist data',
     )
     declare_sim_mode_cmd = DeclareLaunchArgument(
         name='sim_mode',
@@ -81,7 +75,7 @@ def generate_launch_description() -> LaunchDescription:
         package='twist_mux',
         executable='twist_mux',
         output='screen',
-        remappings=[('/cmd_vel_out', cmd_vel_out_topic)],
+        remappings=[('/cmd_vel_out', 'cmd_vel')],
         parameters=[twist_mux_params_file],
     )
 
@@ -104,6 +98,9 @@ def generate_launch_description() -> LaunchDescription:
         PythonLaunchDescriptionSource(
             os.path.join(aether_webserver_share, 'launch', 'webserver_bringup_launch.py'),
         ),
+        launch_arguments={
+            'use_sim_time': sim_mode,
+        }.items(),
         condition=IfCondition(webserver),
     )
 
@@ -129,7 +126,6 @@ def generate_launch_description() -> LaunchDescription:
     return LaunchDescription(
         [
             # Parameters declaration
-            declare_cmd_out_vel_topic,
             declare_sim_mode_cmd,
             declare_slam_cmd,
             declare_use_localization_cmd,
