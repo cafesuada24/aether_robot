@@ -16,6 +16,7 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>twist_mux</exec_depend>
+  <exec_depend>teleop_twist_joy</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>aether_navigation</exec_depend>
   <exec_depend>aether_driver</exec_depend>
