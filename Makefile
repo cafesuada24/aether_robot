@@ -40,7 +40,10 @@ run_docker_container:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
 		--gpus all \
-		aether-bot:latest \
+		-v ~/ros2_ws:/ros2_ws \
+		--device=/dev/ttyUSB0:/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0 \
+		aether-bot-armv8:latest \
+
 		# --device=/dev/ttyUSB0 \
 		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
 shell_attach_docker:
