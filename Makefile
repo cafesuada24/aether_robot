@@ -1,12 +1,10 @@
-SHELL := /usr/bin/zsh
+SHELL := /usr/bin/bash
 ROS_DISTRO := jazzy
 # BASE_CLANG := --build-base build_clang --install-base install_clang
 PYTHON3_EXECUTABLE := $(shell which python3)
 BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-SIM_PKG := aether_gazebo
-
-PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether_bringup aether_agent aether_interfaces aether_driver aether_webserver aether_description
+PACKAGES_TO_BUILD := aether_gazebo aether_navigation aether_bringup aether_agent aether_interfaces aether_driver aether_webserver aether_description
 
 
 
