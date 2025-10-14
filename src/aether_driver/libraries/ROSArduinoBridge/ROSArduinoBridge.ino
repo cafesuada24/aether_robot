@@ -414,10 +414,10 @@ if (now - lastUpdate >= updateIntervalMs) {
   }
   
   // Check to see if we have exceeded the auto-stop interval
-  // if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
-  //   setMotorSpeeds(0, 0);
-  //   moving = 0;
-  // }
+  if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
+    setMotorSpeeds(0, 0);
+    moving = 0;
+  }
        
   
 #endif
