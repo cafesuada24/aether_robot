@@ -37,7 +37,7 @@ class DriverNode : public rclcpp::Node {
         get_parameter("serial_timeout_ms").as_int(),
         get_parameter("encoder_resolution").as_int(),
         get_parameter("wheel_diameter_meter").as_double(),
-        get_parameter("gear_reduction").as_double(),
+        // get_parameter("gear_reduction").as_double(),
         get_parameter("min_linear_speed_m_per_s").as_double(),
         get_parameter("max_linear_speed_m_per_s").as_double());
 
@@ -56,7 +56,7 @@ class DriverNode : public rclcpp::Node {
     this->declare_parameter("serial_timeout_ms", 1000);
     this->declare_parameter("wheel_diameter_meter", 0.065);
     this->declare_parameter("encoder_resolution", 40);
-    this->declare_parameter("gear_reduction", 1.0 / 48);
+    // this->declare_parameter("gear_reduction", 1.0 / 48);
     this->declare_parameter("min_linear_speed_m_per_s", 0.3);
     this->declare_parameter("max_linear_speed_m_per_s", 1.0);
   }

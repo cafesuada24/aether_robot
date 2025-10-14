@@ -7,13 +7,13 @@
 namespace aether_driver {
 Arduino::Arduino(const std::string& serial, const uint16_t braud,
                  const uint64_t timeout_ms, const uint16_t encoder_resolution,
-                 const float wheel_diameter_meter, const float gear_reduction,
+                 const float wheel_diameter_meter,
                  const float min_linear_speed_m_per_s,
                  const float max_linear_speed_m_per_s)
 
     : encoder_resolution_{encoder_resolution},
       wheel_diameter_meter_{wheel_diameter_meter},
-      gear_reduction_{gear_reduction},
+      // gear_reduction_{gear_reduction},
       min_linear_speed_m_per_s_{min_linear_speed_m_per_s},
       max_linear_speed_m_per_s_{max_linear_speed_m_per_s} {
   auto timeout{aether_driver::Timeout::simpleTimeout(timeout_ms)};
@@ -32,12 +32,12 @@ Arduino::Arduino(const std::string& serial, const uint16_t braud,
 int16_t Arduino::calc_ticks_per_loop(const float speed) const {
   if (wheel_diameter_meter_ <= 0) {
     std::cerr << "wheel diameter is not set";
-    throw std::exception();
+    throw aether_driver::SerialException("Parameter 'wheel_diameter' is not set correctly.");
   }
 
   if (encoder_resolution_ <= 0) {
     std::cerr << "encoder resolution is not set";
-    throw std::exception();
+    throw aether_driver::SerialException("Parameter 'encoder_resolution' is not set correctly.");
   }
 
   return std::round(speed / (wheel_diameter_meter_ * M_PI * PID_RATE) * encoder_resolution_);
