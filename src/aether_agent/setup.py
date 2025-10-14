@@ -33,6 +33,7 @@ setup(
     entry_points={
         'console_scripts': [
             'llm_service = scripts.llm_service:main',
+            'mcp_server = scripts.mcp_server:main',
         ],
     },
 )
