@@ -1,3 +1,4 @@
+# type: ignore
 import asyncio
 import math
 from functools import partial
@@ -283,11 +284,6 @@ async def ros_loop(node: Node) -> None:
     while rclpy.ok():
         rclpy.spin_once(node, timeout_sec=0)
         await asyncio.sleep(1e-4)
-
-
-def test(msg: String) -> None:
-    node.get_logger().info(f'received {msg}')
-
 
 async def amain() -> None:
     """Main node loop."""
