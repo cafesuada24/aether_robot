@@ -1,18 +1,28 @@
 [project]
-name = "Aether"
-version = "0.0.1"
+name = "aether-bot"
+version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  'setuptools',
-  'semantic-kernel[google]',
-  'typeguard',
-  'dotenv',
-  'catkin-pkg',
-  'empy',
-  'lark',
+    "catkin-pkg>=1.1.0",
+    "dotenv>=0.9.9",
+    "empy>=4.2",
+    "lark>=1.3.0",
+    "mcp[cli]>=1.17.0",
+    "setuptools>=80.9.0",
+    "typeguard>=4.4.4",
 ]
+# dependencies = [
+#   'setuptools',
+#   'semantic-kernel[google]',
+#   'typeguard',
+#   'dotenv',
+#   'catkin-pkg',
+#   'empy',
+#   'lark',
+#   "mcp[cli]>=1.17.0",
+# ]
 
 [tool.ruff]
 line-length = 88
