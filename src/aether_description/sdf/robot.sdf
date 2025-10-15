@@ -454,15 +454,15 @@
           <param name="right_wheel_name">wheel_front_right_joint</param>
           <param name="loop_rate_ms">30</param>
           <param name="baud_rate">57600</param>
-          <param name="timeout">1000</param>
+          <param name="timeout_ms">1000</param>
           <param name="device">/dev/ttyUSB0</param>
           <param name="enc_counts_per_rev">40</param>
         </hardware>
 
         <joint name="wheel_front_left_joint">
           <command_interface name="velocity">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">-0.35</param>
+            <param name="max">0.8</param>
           </command_interface>
 
           <state_interface name="velocity" />
@@ -471,8 +471,8 @@
 
         <joint name="wheel_front_right_joint">
           <command_interface name="velocity">
-            <param name="min">-1</param>
-            <param name="max">1</param>
+            <param name="min">-0.35</param>
+            <param name="max">0.8</param>
           </command_interface>
 
           <state_interface name="velocity" />
@@ -490,8 +490,8 @@
 
         <joint name="wheel_front_left_joint">
           <command_interface name="velocity">
-            <param name="min">-10</param>
-            <param name="max">10</param>
+            <param name="min">-0.35</param>
+            <param name="max">1</param>
           </command_interface>
 
           <state_interface name="velocity" />
@@ -500,8 +500,8 @@
 
         <joint name="wheel_front_right_joint">
           <command_interface name="velocity">
-            <param name="min">-10</param>
-            <param name="max">10</param>
+            <param name="min">-0.35</param>
+            <param name="max">0.8</param>
           </command_interface>
 
           <state_interface name="velocity" />

@@ -28,7 +28,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_init(
   cfg_.loop_rate_ms = std::stof(info_.hardware_parameters["loop_rate_ms"]);
   cfg_.device = info_.hardware_parameters["device"];
   cfg_.baud_rate = std::stoi(info_.hardware_parameters["baud_rate"]);
-  cfg_.timeout = std::stoi(info_.hardware_parameters["timeout"]);
+  cfg_.timeout_ms = std::stoi(info_.hardware_parameters["timeout_ms"]);
   cfg_.enc_counts_per_rev =
       std::stoi(info_.hardware_parameters["enc_counts_per_rev"]);
 
@@ -37,7 +37,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_init(
   r_wheel_.setup(cfg_.right_wheel_name, cfg_.enc_counts_per_rev);
 
   // Set up the Arduino
-  arduino_.setup(cfg_.device, cfg_.baud_rate, cfg_.timeout,
+  arduino_.setup(cfg_.device, cfg_.baud_rate, cfg_.timeout_ms,
                  cfg_.enc_counts_per_rev, 0.065);
 
   RCLCPP_INFO(logger_, "Finished initialization");

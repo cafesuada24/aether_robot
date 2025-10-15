@@ -20,11 +20,11 @@ wheel_controller:
     wheel_radius: 0.0325
 
     linear.x.max_velocity: 0.8
-    linear.x.min_velocity: -0.8
-    linear.x.max_acceleration: 5.0
-    linear.x.max_deceleration: -5.0
-    linear.x.max_acceleration_reverse: -2.0
-    linear.x.max_deceleration_reverse: 2.0
+    linear.x.min_velocity: -0.35
+    linear.x.max_acceleration: 3.5
+    linear.x.max_deceleration: -3.5
+    linear.x.max_acceleration_reverse: -1.0
+    linear.x.max_deceleration_reverse: 1.0
     
     # odom_frame_id: odom
     # base_frame_id: base_link
