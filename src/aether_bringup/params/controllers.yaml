@@ -9,7 +9,7 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-wheel_controler:
+wheel_controller:
   ros__parameters:
     publish_rate: 50.0
 
