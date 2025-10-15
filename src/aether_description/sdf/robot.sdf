@@ -4,7 +4,7 @@
 
     <!-- >> PROPERTIES >> -->
 
-    <xacro:arg name="sim_mode" default="false" />
+    <xacro:arg name="sim_mode" default="False" />
 
     <xacro:property name="base_height" value="0.1" />
     <xacro:property name="base_width" value="0.16" />
@@ -491,7 +491,7 @@
         <joint name="wheel_front_left_joint">
           <command_interface name="velocity">
             <param name="min">-0.35</param>
-            <param name="max">1</param>
+            <param name="max">0.8</param>
           </command_interface>
 
           <state_interface name="velocity" />
@@ -512,7 +512,7 @@
     </xacro:if>
 
     <plugin filename='gz_ros2_control-system' name='gz_ros2_control::GazeboSimROS2ControlPlugin'>
-      <parameters>$(find aether_gazebo)/params/controllers.yaml</parameters>
+      <!-- <parameters>$(find aether_gazebo)/params/controllers.yaml</parameters> -->
     </plugin>
     <!-- <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive"> -->
     <!---->
