@@ -76,8 +76,12 @@
     //   analogWrite(RIGHT_MOTOR_FORWARD, 0); analogWrite(RIGHT_MOTOR_BACKWARD, 0);
     //   return;
     // }
+    #ifdef ARDUINO_SINGLE_CHANNEL_ENC_COUNTER
+      setDirection(i, spd < 0 ? -1 : 1);
+    #endif 
+    
     unsigned char reverse = 0;
-  
+
     if (spd < 0)
     {
       spd = -spd;
@@ -85,7 +89,7 @@
     }
     if (spd > 255)
       spd = 255;
-    
+
     if (i == LEFT) { 
       if      (reverse == 0) { analogWrite(LEFT_MOTOR_FORWARD, spd); analogWrite(LEFT_MOTOR_BACKWARD, 0); }
       else if (reverse == 1) { analogWrite(LEFT_MOTOR_BACKWARD, spd); analogWrite(LEFT_MOTOR_FORWARD, 0); }
@@ -98,10 +102,10 @@
   
   void setMotorSpeeds(int leftSpeed, int rightSpeed) {
     // Serial.print("motor speed set: "); Serial.print(leftSpeed); Serial.print(" "); Serial.println(rightSpeed);
-    if (force_stop) {
-      leftSpeed = -70;
-      rightSpeed = -70;
-    }
+    // if (force_stop) {
+    //   leftSpeed = -70;
+    //   rightSpeed = -70;
+    // }
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
