@@ -14,15 +14,15 @@ class Arduino {
                    const uint16_t encoder_resolution = 20,
                    const float wheel_diameter_meter = 0.01,
                    // const float gear_reduction = 1/120,
-                   const float min_linear_speed_m_per_s = 1.0,
-                   const float max_linear_speed_m_per_s = 0.0);
+                   const float min_linear_speed_m_per_s = 0.0,
+                   const float max_linear_speed_m_per_s = 1.0);
 
   void setup(const std::string& serial = "/dev/ttyUSB0",
              const uint16_t braud = 9600, const uint64_t timeout_ms = 1000,
              const uint16_t encoder_resolution = 20,
              const float wheel_diameter_meter = 0.01,
-             const float min_linear_speed_m_per_s = 1.0,
-             const float max_linear_speed_m_per_s = 0.0);
+             const float min_linear_speed_m_per_s = 0.0,
+             const float max_linear_speed_m_per_s = 1.0);
 
   void connect();
 
