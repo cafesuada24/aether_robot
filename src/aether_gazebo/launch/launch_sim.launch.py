@@ -85,8 +85,7 @@ def generate_launch_description() -> LaunchDescription:
 
     aether_bringup_launch = GroupAction(
         [
-            SetRemap('/odom', '/four_wheel_controller/odom'),
-            SetRemap('/cmd_vel', '/four_wheel_controller/cmd_vel'),
+            SetRemap('/odom', '/wheel_controller/odom'),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     os.path.join(
@@ -96,7 +95,6 @@ def generate_launch_description() -> LaunchDescription:
                     ),
                 ),
                 launch_arguments={
-                    # 'cmd_vel_out_topic': 'four_wheel_controller/cmd_vel',
                     'sim_mode': 'True',
                 }.items(),
             ),
