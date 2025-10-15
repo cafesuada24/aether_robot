@@ -25,6 +25,7 @@ class Arduino {
                       const float k_o);
   void read_encoder_values(uint64_t& left, uint64_t& right);
   
+  void send_empty_message();
 
  private:
   static constexpr auto PID_RATE{30};

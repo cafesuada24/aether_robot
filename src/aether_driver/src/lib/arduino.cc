@@ -143,4 +143,8 @@ bool Arduino::set_pid_values(const float k_p, const float k_d, const float k_i, 
   serial_.write(ss.str());
   return std::strcmp(serial_.read(2).c_str(), "OK") == 0;
 }
+
+void Arduino::send_empty_message() {
+  serial_.write("\r");
+}
 }  // namespace aether_driver
