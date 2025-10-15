@@ -19,10 +19,13 @@
   <exec_depend>teleop_twist_joy</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>aether_navigation</exec_depend>
+  <exec_depend>aether_description</exec_depend>
   <exec_depend>aether_driver</exec_depend>
   <exec_depend>aether_webserver</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
-
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
