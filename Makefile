@@ -25,13 +25,13 @@ build_clean:
 	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 
 launch_rsp:
-	ros2 launch $(SIM_PKG) rsp.launch.py use_sim_time:=true
+	ros2 launch aether_gazebo rsp.launch.py use_sim_time:=true
 
 launch_sim:
-	ros2 launch $(SIM_PKG) launch_sim.launch.py
+	ros2 launch aether_gazebo launch_sim.launch.py
 
 run_rviz:
-	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
+	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=false
 
 build_docker_container: Dockerfile
 	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
@@ -83,7 +83,13 @@ shell_attach_docker:
 # 		config_file:=bridge.yaml
 #
 #
+
+open_teleop_sim:
+	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
+		--ros-args -r /cmd_vel:=/key_cmd_vel\
+		-p stamped:=true -p use_sim_time:=True
+
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
 		--ros-args -r /cmd_vel:=/key_cmd_vel\
-		-p stamped:=true
+		-p stamped:=true -p use_sim_time:=False
