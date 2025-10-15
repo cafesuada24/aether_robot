@@ -1,6 +1,6 @@
 <library path="diffdrive_arduino">
   <class name="aether_driver/DiffDriveArduino"
-         type="DiffDriveArduino"
+         type="aether_driver::DiffDriveArduino"
          base_class_type="hardware_interface::SystemInterface">
     <description>
       Hardware Interface for Differential Drive Arduino controller.
