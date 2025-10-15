@@ -37,7 +37,8 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_init(
   r_wheel_.setup(cfg_.right_wheel_name, cfg_.enc_counts_per_rev);
 
   // Set up the Arduino
-  arduino_.setup(cfg_.device, cfg_.baud_rate, cfg_.timeout, cfg_.enc_counts_per_rev, 0.065);
+  arduino_.setup(cfg_.device, cfg_.baud_rate, cfg_.timeout,
+                 cfg_.enc_counts_per_rev, 0.065);
 
   RCLCPP_INFO(logger_, "Finished initialization");
 
@@ -47,7 +48,6 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_init(
 hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
     [[maybe_unused]] const rclcpp_lifecycle::State& previous_state) {
   RCLCPP_INFO(logger_, "Configuring");
-
 
   arduino_.connect();
 
@@ -166,10 +166,13 @@ hardware_interface::return_type DiffDriveArduino::write(
   if (!arduino_.connected()) {
     return hardware_interface::return_type::ERROR;
   }
-  
-  // RCLCPP_INFO(logger_, "driving with speed: %f %f", l_wheel_.cmd, r_wheel_.cmd);
 
-  arduino_.drive_m_per_sec(l_wheel_.cmd, r_wheel_.cmd);
+  // RCLCPP_INFO(logger_, "driving with speed: %f %f", l_wheel_.cmd,
+  // r_wheel_.cmd);
+
+  arduino_.drive_m_per_sec(
+      l_wheel_.cmd / l_wheel_.rads_per_count / cfg_.loop_rate_ms,
+      r_wheel_.cmd / r_wheel_.rads_per_count / cfg_.loop_rate_ms);
 
   return hardware_interface::return_type::OK;
 }
