@@ -2,7 +2,7 @@
 #define AETHER_DRIVER__CONFIG_H_
 #include <string>
 
-namespace aether_drive {
+namespace aether_driver {
 struct Config {
   std::string left_wheel_name{"left_wheel"};
   std::string right_wheel_name{"right_wheel"};
@@ -12,6 +12,6 @@ struct Config {
   int timeout{1000};
   int enc_counts_per_rev{40};
 };
-}  // namespace aether_drive
+}  // namespace aether_driver
 
 #endif  // AETHER_DRIVER__CONFIG_H_
