@@ -69,7 +69,7 @@
    /* L298 Motor driver*/
    #define L298_MOTOR_DRIVER
 
-   #define USE_ULTRASONIC_SAFETY
+  //  #define USE_ULTRASONIC_SAFETY
 #endif
 
 //#define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
@@ -338,6 +338,8 @@ void setup() {
 */
 
 void loop() {
+  const auto now{ millis() };
+
   while (Serial.available() > 0) {
     
     // Read the next character
@@ -398,8 +400,6 @@ void loop() {
 #endif
 
 #ifdef ARDUINO_SINGLE_CHANNEL_ENC_COUNTER
-
-const auto now{ millis() };
 if (now - lastUpdate >= updateIntervalMs) {
   updateMotorSpeed();
   lastUpdate = now;
@@ -408,13 +408,13 @@ if (now - lastUpdate >= updateIntervalMs) {
 #endif
 // If we are using base control, run a PID calculation at the appropriate intervals
 #ifdef USE_BASE
-  if (millis() > nextPID) {
+  if (now > nextPID) {
     updatePID();
     nextPID += PID_INTERVAL;
   }
   
   // Check to see if we have exceeded the auto-stop interval
-  if ((millis() - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
+  if ((now - lastMotorCommand) > AUTO_STOP_INTERVAL) {;
     setMotorSpeeds(0, 0);
     moving = 0;
   }
