@@ -3,13 +3,13 @@ controller_manager:
     update_rate: 30
     # use_sim_time: true
 
-    four_wheel_controller:
+    wheel_controller:
       type: diff_drive_controller/DiffDriveController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-four_wheel_controller:
+wheel_controler:
   ros__parameters:
     publish_rate: 50.0
 

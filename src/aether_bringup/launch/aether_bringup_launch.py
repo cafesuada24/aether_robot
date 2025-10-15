@@ -95,7 +95,7 @@ def generate_launch_description() -> LaunchDescription:
         package='twist_mux',
         executable='twist_mux',
         output='screen',
-        remappings=[('/cmd_vel_out', 'cmd_vel')],
+        remappings=[('/cmd_vel_out', '/wheel_controller/cmd_vel')],
         parameters=[twist_mux_params_file],
     )
 
@@ -188,7 +188,7 @@ def generate_launch_description() -> LaunchDescription:
     robot_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
-        arguments=['four_wheel_controller', '--param-file', robot_controllers],
+        arguments=['wheel_controller', '--param-file', robot_controllers],
     )
 
 
@@ -211,11 +211,11 @@ def generate_launch_description() -> LaunchDescription:
             declare_model_path_cmd,
             # Launch nodes
             robot_state_publisher_node,
-            hardware_bringup_launch,
+            # hardware_bringup_launch,
             teleop_twist_joy,
             twist_mux_node,
-            nav_bringup_launch,
-            webserver_bringup_launch,
+            # nav_bringup_launch,
+            # webserver_bringup_launch,
             delayed_controller_manager_spawner,
             robot_controller_spawner,
             delayed_joint_state_broadcaster,
