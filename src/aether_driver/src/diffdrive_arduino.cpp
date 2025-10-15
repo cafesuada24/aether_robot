@@ -48,6 +48,16 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
     [[maybe_unused]] const rclcpp_lifecycle::State& previous_state) {
   RCLCPP_INFO(logger_, "Starting Controller...");
 
+  arduino_.connect();
+
+  if (!arduino_.connected()) {
+    RCLCPP_WARN(logger_,
+                "Unable to connect to arduino, please check and try again.");
+    return CallbackReturn::FAILURE;
+  }
+
+  RCLCPP_INFO(logger_, "Connected to arduino nano.");
+
   arduino_.send_empty_message();
   // arduino_.set_pid_values(30, 20, 0, 100);
   arduino_.set_pid_values(50, 15, 0, 50);
@@ -64,27 +74,18 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_cleanup(
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-
 hardware_interface::CallbackReturn DiffDriveArduino::on_activate(
     [[maybe_unused]] const rclcpp_lifecycle::State& previous_state) {
-  arduino_.connect();
-  if (!arduino_.connected()) {
-    RCLCPP_WARN(logger_, "Unable to connect to arduino, please check and try again.");
-    return CallbackReturn::FAILURE;
-  }
-
-  RCLCPP_INFO(logger_, "Connected to arduino nano.");
-
   return CallbackReturn::SUCCESS;
 }
 
-
 hardware_interface::CallbackReturn DiffDriveArduino::on_deactivate(
     [[maybe_unused]] const rclcpp_lifecycle::State& previous_state) {
-
   arduino_.close();
   if (arduino_.connected()) {
-    RCLCPP_WARN(logger_, "Unable to disconnect from arduino, please check and try again.");
+    RCLCPP_WARN(
+        logger_,
+        "Unable to disconnect from arduino, please check and try again.");
     return CallbackReturn::FAILURE;
   }
 
