@@ -59,9 +59,9 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
 
   RCLCPP_INFO(logger_, "Connected to arduino nano.");
 
-  // arduino_.send_empty_message();
-  // arduino_.set_pid_values(30, 20, 0, 100);
-  arduino_.set_pid_values(50, 15, 0, 50);
+  arduino_.send_empty_message();
+  arduino_.set_pid_values(30, 20, 0, 100);
+  // arduino_.set_pid_values(50, 15, 0, 50);
 
   RCLCPP_INFO(logger_, "Finished configuration.");
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -168,6 +168,7 @@ hardware_interface::return_type DiffDriveArduino::write(
   }
   
   // RCLCPP_INFO(logger_, "driving with speed: %f %f", l_wheel_.cmd, r_wheel_.cmd);
+
   arduino_.drive_m_per_sec(l_wheel_.cmd, r_wheel_.cmd);
 
   return hardware_interface::return_type::OK;
