@@ -133,7 +133,7 @@ bool Arduino::drive(const uint16_t left_ticks_per_loop,
 
   serial_.write(oss.str());
 
-  return std::strcmp(serial_.read(2).c_str(), "OK") == 0;
+  return std::strcmp(serial_.readline().c_str(), "OK") == 0;
 }
 
 bool Arduino::connected() const { return serial_.isOpen(); }
@@ -141,8 +141,7 @@ bool Arduino::connected() const { return serial_.isOpen(); }
 void Arduino::read_encoder_values(uint64_t& left, uint64_t& right) {
   serial_.write("e\r"s);
 
-  std::string response{};
-  serial_.readline(response);
+  const auto response{serial_.readline()};
 
   const std::string delimiter{" "};
   size_t del_pos{response.find(delimiter)};
@@ -158,7 +157,7 @@ bool Arduino::set_pid_values(const float k_p, const float k_d, const float k_i,
   std::stringstream ss;
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
-  return std::strcmp(serial_.read(2).c_str(), "OK") == 0;
+  return std::strcmp(serial_.readline().c_str(), "OK") == 0;
 }
 
 void Arduino::send_empty_message() { serial_.write("\r"); }
