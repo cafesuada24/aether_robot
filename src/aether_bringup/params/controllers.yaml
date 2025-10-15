@@ -19,7 +19,7 @@ wheel_controller:
     wheel_separation: 0.212
     wheel_radius: 0.0325
     
-    odom_frame_id: odom
-    base_frame_id: base_link
+    # odom_frame_id: odom
+    # base_frame_id: base_link
   
 
