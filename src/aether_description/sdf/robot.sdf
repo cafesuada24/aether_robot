@@ -4,6 +4,8 @@
 
     <!-- >> PROPERTIES >> -->
 
+    <xacro:arg name="sim_mode" default="false" />
+
     <xacro:property name="base_height" value="0.1" />
     <xacro:property name="base_width" value="0.16" />
     <xacro:property name="base_length" value="0.23" />
@@ -443,32 +445,71 @@
     <!--   <parameters>$(find articubot)/params/controllers.yaml</parameters> -->
     <!-- </plugin> -->
 
-    <ros2_control name="GazeboSimSystem" type="system">
-      <hardware>
-        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-      </hardware>
 
-      <joint name="wheel_front_left_joint">
-        <command_interface name="velocity">
-          <param name="min">-10</param>
-          <param name="max">10</param>
-        </command_interface>
+    <xacro:unless value="${$(arg sim_mode)}">
+      <ros2_control name="AetherControl" type="system">
+        <hardware>
+          <plugin>aether_driver/DiffDriveArduino</plugin>
+          <param name="left_wheel_name">wheel_front_left_joint</param>
+          <param name="right_wheel_name">wheel_front_right_joint</param>
+          <param name="loop_rate_ms">30</param>
+          <param name="baud_rate">57600</param>
+          <param name="timeout">1000</param>
+          <param name="device">/dev/ttyUSB0</param>
+          <param name="enc_counts_per_rev">40</param>
+        </hardware>
 
-        <state_interface name="velocity" />
-        <state_interface name="position" />
-      </joint>
+        <joint name="wheel_front_left_joint">
+          <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+          </command_interface>
 
-      <joint name="wheel_front_right_joint">
-        <command_interface name="velocity">
-          <param name="min">-10</param>
-          <param name="max">10</param>
-        </command_interface>
+          <state_interface name="velocity" />
+          <state_interface name="position" />
+        </joint>
 
-        <state_interface name="velocity" />
-        <state_interface name="position" />
-      </joint>
+        <joint name="wheel_front_right_joint">
+          <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+          </command_interface>
 
-    </ros2_control>
+          <state_interface name="velocity" />
+          <state_interface name="position" />
+        </joint>
+
+      </ros2_control>
+    </xacro:unless>
+
+    <xacro:if value="${$(arg sim_mode)}">
+      <ros2_control name="GazeboSimSystem" type="system">
+        <hardware>
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+
+        <joint name="wheel_front_left_joint">
+          <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+          </command_interface>
+
+          <state_interface name="velocity" />
+          <state_interface name="position" />
+        </joint>
+
+        <joint name="wheel_front_right_joint">
+          <command_interface name="velocity">
+            <param name="min">-10</param>
+            <param name="max">10</param>
+          </command_interface>
+
+          <state_interface name="velocity" />
+          <state_interface name="position" />
+        </joint>
+
+      </ros2_control>
+    </xacro:if>
 
     <plugin filename='gz_ros2_control-system' name='gz_ros2_control::GazeboSimROS2ControlPlugin'>
       <parameters>$(find aether_gazebo)/params/controllers.yaml</parameters>
