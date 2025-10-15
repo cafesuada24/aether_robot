@@ -17,6 +17,19 @@ class Arduino {
                    const float min_linear_speed_m_per_s = 1.0,
                    const float max_linear_speed_m_per_s = 0.0);
 
+  void setup(const std::string& serial = "/dev/ttyUSB0",
+             const uint16_t braud = 9600, const uint64_t timeout_ms = 1000,
+             const uint16_t encoder_resolution = 20,
+             const float wheel_diameter_meter = 0.01,
+             const float min_linear_speed_m_per_s = 1.0,
+             const float max_linear_speed_m_per_s = 0.0);
+
+  void connect();
+
+  bool connected() const;
+
+  void close();
+
   bool drive_m_per_sec(const float left_speed, const float right_speed);
 
   bool stop_motors();
@@ -24,7 +37,7 @@ class Arduino {
   bool set_pid_values(const float k_p, const float k_d, const float k_i,
                       const float k_o);
   void read_encoder_values(uint64_t& left, uint64_t& right);
-  
+
   void send_empty_message();
 
  private:
@@ -46,7 +59,6 @@ class Arduino {
   int16_t calc_ticks_per_loop(const float speed) const;
   float ensure_speed(const float speed) const;
 
-  bool connected() const;
 };
 }  // namespace aether_driver
 

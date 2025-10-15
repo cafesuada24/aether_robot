@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <exception>
 #include <iostream>
 #include <string>
 
@@ -15,21 +14,38 @@ Arduino::Arduino(const std::string& serial, const uint16_t braud,
                  const float min_linear_speed_m_per_s,
                  const float max_linear_speed_m_per_s)
 
-    : encoder_resolution_{encoder_resolution},
-      wheel_diameter_meter_{wheel_diameter_meter},
-      // gear_reduction_{gear_reduction},
-      min_linear_speed_m_per_s_{min_linear_speed_m_per_s},
-      max_linear_speed_m_per_s_{max_linear_speed_m_per_s} {
-  auto timeout{aether_driver::Timeout::simpleTimeout(timeout_ms)};
+{
+  setup(serial, braud, timeout_ms, encoder_resolution, wheel_diameter_meter,
+        min_linear_speed_m_per_s, max_linear_speed_m_per_s);
+}
 
+void Arduino::setup(const std::string& serial, const uint16_t braud,
+                    const uint64_t timeout_ms,
+                    const uint16_t encoder_resolution,
+                    const float wheel_diameter_meter,
+                    const float min_linear_speed_m_per_s,
+                    const float max_linear_speed_m_per_s) {
+  encoder_resolution_ = encoder_resolution;
+  wheel_diameter_meter_ = wheel_diameter_meter;
+  // gear_reduction_{gear_reduction},
+  min_linear_speed_m_per_s_ = min_linear_speed_m_per_s;
+  max_linear_speed_m_per_s_ = max_linear_speed_m_per_s;
+
+  auto timeout{aether_driver::Timeout::simpleTimeout(timeout_ms)};
   serial_.setPort(serial);
   serial_.setBaudrate(braud);
   serial_.setTimeout(timeout);
+}
 
-  serial_.open();
+void Arduino::connect() {
+  if (!connected()) {
+    serial_.open();
+  }
+}
 
-  if (!serial_.isOpen()) {
-    throw aether_driver::SerialException("Port is not opened");
+void Arduino::close() {
+  if (connected()) {
+    serial_.close();
   }
 }
 
@@ -125,26 +141,25 @@ bool Arduino::connected() const { return serial_.isOpen(); }
 void Arduino::read_encoder_values(uint64_t& left, uint64_t& right) {
   serial_.write("e\r"s);
 
-  std::string response {};
+  std::string response{};
   serial_.readline(response);
 
-  const std::string delimiter { " " };
-  size_t del_pos {response.find(delimiter) };
-  std::string token_1 {response.substr(0, del_pos) };
-  std::string token_2 {response.substr(del_pos + delimiter.length())};
+  const std::string delimiter{" "};
+  size_t del_pos{response.find(delimiter)};
+  std::string token_1{response.substr(0, del_pos)};
+  std::string token_2{response.substr(del_pos + delimiter.length())};
 
   left = std::atoll(token_1.c_str());
   right = std::atoll(token_2.c_str());
 };
 
-bool Arduino::set_pid_values(const float k_p, const float k_d, const float k_i, const float k_o) {
+bool Arduino::set_pid_values(const float k_p, const float k_d, const float k_i,
+                             const float k_o) {
   std::stringstream ss;
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
   return std::strcmp(serial_.read(2).c_str(), "OK") == 0;
 }
 
-void Arduino::send_empty_message() {
-  serial_.write("\r");
-}
+void Arduino::send_empty_message() { serial_.write("\r"); }
 }  // namespace aether_driver
