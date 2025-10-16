@@ -39,11 +39,11 @@ build_docker_container: Dockerfile
 run_docker_container:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
-		--gpus all \
+		--runtime=nvidia \
 		-v ~/ros2_ws:/ros2_ws \
-		--device=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyUSB0: \
+		--device=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyUSB0 \
 		--device=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0:/dev/ttyUSB1 \
-		aether-bot-armv8:latest \
+		aether-bot-armv8:latest
 
 		# --device=/dev/ttyUSB0 \
 		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
