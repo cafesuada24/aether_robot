@@ -36,10 +36,12 @@ class Arduino {
 
   bool set_pid_values(const float k_p, const float k_d, const float k_i,
                       const float k_o);
-  void read_encoder_values(uint64_t& left, uint64_t& right);
+  void read_encoder_values(int64_t& left, int64_t& right);
 
   void send_empty_message();
 
+  bool drive(const int16_t left_ticks_per_loop,
+             const int16_t right_ticks_per_loop);
  private:
   static constexpr auto PID_RATE{30};
   static constexpr auto PID_INTERVAL{1000.0 / 30};
@@ -53,8 +55,6 @@ class Arduino {
   float min_linear_speed_m_per_s_{};
   float max_linear_speed_m_per_s_{};
 
-  bool drive(const uint16_t left_ticks_per_loop,
-             const uint16_t right_ticks_per_loop);
 
   int16_t calc_ticks_per_loop(const float speed) const;
   float ensure_speed(const float speed) const;

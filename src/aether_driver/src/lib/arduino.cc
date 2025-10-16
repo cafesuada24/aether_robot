@@ -125,8 +125,8 @@ bool Arduino::drive_m_per_sec(const float left_speed, const float right_speed) {
   return drive(left_ticks_per_loop, right_ticks_per_loop);
 }
 
-bool Arduino::drive(const uint16_t left_ticks_per_loop,
-                    const uint16_t right_ticks_per_loop) {
+bool Arduino::drive(const int16_t left_ticks_per_loop,
+                    const int16_t right_ticks_per_loop) {
   std::ostringstream oss{};
 
   oss << "m " << left_ticks_per_loop << ' ' << right_ticks_per_loop << '\r';
@@ -138,7 +138,7 @@ bool Arduino::drive(const uint16_t left_ticks_per_loop,
 
 bool Arduino::connected() const { return serial_.isOpen(); }
 
-void Arduino::read_encoder_values(uint64_t& left, uint64_t& right) {
+void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
   serial_.write("e\r"s);
 
   const auto response{serial_.readline()};

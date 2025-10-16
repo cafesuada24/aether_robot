@@ -170,7 +170,7 @@ hardware_interface::return_type DiffDriveArduino::write(
   // RCLCPP_INFO(logger_, "driving with speed: %f %f", l_wheel_.cmd,
   // r_wheel_.cmd);
 
-  arduino_.drive_m_per_sec(
+  arduino_.drive(
       l_wheel_.cmd / l_wheel_.rads_per_count / cfg_.loop_rate_ms,
       r_wheel_.cmd / r_wheel_.rads_per_count / cfg_.loop_rate_ms);
 
