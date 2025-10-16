@@ -150,6 +150,8 @@ def generate_launch_description() -> LaunchDescription:
                 model_path,
                 ' sim_mode:=',
                 sim_mode,
+                ' controller_params_file:=',
+                robot_controllers,
             ],
         ),
         value_type=str,
@@ -176,6 +178,7 @@ def generate_launch_description() -> LaunchDescription:
             target_action=robot_state_publisher_node,
             on_start=[controller_manager_spawner],
         ),
+        condition=UnlessCondition(sim_mode),
     )
 
     joint_state_broadcaster_spawner = Node(

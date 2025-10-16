@@ -513,7 +513,7 @@
     </xacro:if>
 
     <plugin filename='gz_ros2_control-system' name='gz_ros2_control::GazeboSimROS2ControlPlugin'>
-      <parameters>$(controller_params_file)</parameters>
+      <parameters>$(arg controller_params_file)</parameters>
     </plugin>
     <!-- <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive"> -->
     <!---->
