@@ -11,10 +11,10 @@ RUN apt update && apt install -y \
 WORKDIR /ros2_ws
 COPY ./src ./src
 COPY ./scripts ./scripts
-COPY ./requirements.txt ./
+# COPY ./requirements.txt ./
 # COPY ./venv ./venv
 
-RUN source ./scripts/setup.bash && \
+RUN source /opt/ros/jazzy/setup.bash && \
     rosdep update --rosdistro jazzy && \
     rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys aether_gazebo --skip-keys object_tracker -r -y && \
     colcon build --symlink-install --packages-ignore aether_gazebo object_tracker
