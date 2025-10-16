@@ -5,6 +5,7 @@
     <!-- >> PROPERTIES >> -->
 
     <xacro:arg name="sim_mode" default="False" />
+    <xacro:arg name="controller_params_file" default="" />
 
     <xacro:property name="base_height" value="0.1" />
     <xacro:property name="base_width" value="0.16" />
@@ -512,7 +513,7 @@
     </xacro:if>
 
     <plugin filename='gz_ros2_control-system' name='gz_ros2_control::GazeboSimROS2ControlPlugin'>
-      <!-- <parameters>$(find aether_gazebo)/params/controllers.yaml</parameters> -->
+      <parameters>$(arg controller_params_file)</parameters>
     </plugin>
     <!-- <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive"> -->
     <!---->
