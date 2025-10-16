@@ -32,7 +32,7 @@ install(TARGETS
 )
 
 install(
-    DIRECTORY params launch
+    DIRECTORY launch
     DESTINATION share/${PROJECT_NAME}
 )
 
