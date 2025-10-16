@@ -3,6 +3,7 @@ FROM arm64v8/ros:jazzy
 SHELL ["/bin/bash", "-c"]
 
 RUN apt update && apt install -y \
+    apt-utils \
     python3-colcon-common-extensions \
     python3-rosdep \
     python3-venv
@@ -10,13 +11,13 @@ RUN apt update && apt install -y \
 WORKDIR /ros2_ws
 COPY ./src ./src
 COPY ./scripts ./scripts
-COPY ./requirements.txt ./
+# COPY ./requirements.txt ./
 # COPY ./venv ./venv
 
-RUN source ./scripts/setup.bash && \
-    rosdep update --rosdistro jazzy --ignore-packages aether_gazebo object_tracker && \
-    rosdep install --rosdistro jazzy --from-paths src --ignore-packages aether_gazebo object_tracker --ignore-src -r -y && \
-    colcon build --packages-ignore aether_gazebo object_tracker
+RUN source /opt/ros/jazzy/setup.bash && \
+    rosdep update --rosdistro jazzy && \
+    rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys aether_gazebo --skip-keys object_tracker -r -y && \
+    colcon build --symlink-install --packages-ignore aether_gazebo object_tracker
 
 RUN rm -rf /var/lib/apt/lists/*
 

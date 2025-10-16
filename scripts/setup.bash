@@ -5,12 +5,12 @@ PYTHON_VERSION='3.12'
 export GZ_SIM_SYSTEM_PLUGIN_PATH="/opt/ros/${ROS_DISTRO}/lib/"
 export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:/opt/ros/jazzy/share/turtlebot3_gazebo/models"
 
-VENV_DIR=./venv
+VENV_DIR=.venv
 
 new_env=0
 if ! [[ -d "$VENV_DIR" ]]; then
     echo 'virtual env not found, creating...'
-    python3 -m virtualenv -p python3 "$VENV_DIR" && echo 'Done.'
+    python3 -m venv "$VENV_DIR" && echo 'Done.'
     new_env=1
 fi
 
@@ -26,8 +26,10 @@ fi
 echo "Sourcing ROS $ROS_DISTRO underlay environment..."
 source "/opt/ros/$ROS_DISTRO/setup.bash" && echo 'Done.'
 
-echo 'Sourcing workspace overlay environment...'
-[[ -f ./install/setup.zsh ]] && source ./install/setup.bash && echo "Done."
+if [[ -f ./install/setup.bash ]]; then
+  echo 'Sourcing workspace overlay environment...'
+  source ./install/setup.bash && echo "Done."
+fi
 
 eval "$(register-python-argcomplete ros2)"
 eval "$(register-python-argcomplete colcon)"

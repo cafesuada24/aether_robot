@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(aether_webserver)
+project(aether_description)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,33 +7,16 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(PkgConfig REQUIRED)
-find_package(foxglove_bridge REQUIRED)
-find_package(web_video_server REQUIRED)
-# find_package(rosbridge_suite REQUIRED)
-pkg_check_modules(AVAHI_CLIENT REQUIRED avahi-client)
+find_package(gz_ros2_control REQUIRED)
+find_package(diff_drive_controller REQUIRED)
+find_package(aether_driver REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(service_advertiser src/service_advertiser.cpp)
-target_link_libraries(service_advertiser
-    ${AVAHI_CLIENT_LIBRARIES}
-)
-ament_target_dependencies(service_advertiser
-    "rclcpp"
-)
-
-
-install(TARGETS
-    service_advertiser
-    DESTINATION lib/${PROJECT_NAME}
-)
-
 install(
-    DIRECTORY launch
-    DESTINATION share/${PROJECT_NAME}
+  DIRECTORY sdf urdf
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

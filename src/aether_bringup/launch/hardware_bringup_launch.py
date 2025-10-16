@@ -49,5 +49,5 @@ def generate_launch_description() -> LaunchDescription:
     ld = LaunchDescription()
     ld.add_action(camera)
     ld.add_action(rplidar)
-    ld.add_action(driver_node)
+    # ld.add_action(driver_node)
     return ld

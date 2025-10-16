@@ -1,12 +1,10 @@
-SHELL := /usr/bin/zsh
+SHELL := /usr/bin/bash
 ROS_DISTRO := jazzy
 # BASE_CLANG := --build-base build_clang --install-base install_clang
 PYTHON3_EXECUTABLE := $(shell which python3)
 BUILD_ARGS := --symlink-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-SIM_PKG := aether_gazebo
-
-PACKAGES_TO_BUILD := ${SIM_PKG} aether_navigation object_tracker aether_bringup aether_agent aether_interfaces aether_driver aether_webserver
+PACKAGES_TO_BUILD := aether_gazebo aether_navigation aether_bringup aether_agent aether_interfaces aether_driver aether_webserver aether_description
 
 
 
@@ -27,13 +25,13 @@ build_clean:
 	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 
 launch_rsp:
-	ros2 launch $(SIM_PKG) rsp.launch.py use_sim_time:=true
+	ros2 launch aether_gazebo rsp.launch.py use_sim_time:=true
 
 launch_sim:
-	ros2 launch $(SIM_PKG) launch_sim.launch.py
+	ros2 launch aether_gazebo launch_sim.launch.py
 
 run_rviz:
-	ros2 run rviz2 rviz2 -d src/$(SIM_PKG)/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
+	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=false
 
 build_docker_container: Dockerfile
 	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
@@ -41,8 +39,12 @@ build_docker_container: Dockerfile
 run_docker_container:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
-		--gpus all \
-		aether-bot:latest \
+		--runtime=nvidia \
+		-v ~/ros2_ws:/ros2_ws \
+		--device=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyUSB0 \
+		--device=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0:/dev/ttyUSB1 \
+		aether-bot-armv8:latest
+
 		# --device=/dev/ttyUSB0 \
 		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
 shell_attach_docker:
@@ -82,7 +84,13 @@ shell_attach_docker:
 # 		config_file:=bridge.yaml
 #
 #
+
+open_teleop_sim:
+	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
+		--ros-args -r /cmd_vel:=/key_cmd_vel\
+		-p stamped:=true -p use_sim_time:=True
+
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
 		--ros-args -r /cmd_vel:=/key_cmd_vel\
-		-p stamped:=true
+		-p stamped:=true -p use_sim_time:=False

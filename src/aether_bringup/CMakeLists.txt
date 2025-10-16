@@ -13,10 +13,14 @@ find_package(geometry_msgs REQUIRED)
 find_package(twist_mux REQUIRED)
 find_package(teleop_twist_joy REQUIRED)
 find_package(aether_navigation REQUIRED)
+find_package(aether_description REQUIRED)
 find_package(aether_driver REQUIRED)
 find_package(aether_webserver REQUIRED)
 find_package(v4l2_camera REQUIRED)
 find_package(rplidar_ros REQUIRED)
+find_package(xacro REQUIRED)
+find_package(controller_manager REQUIRED)
+find_package(robot_state_publisher REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -32,11 +36,6 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(TARGETS twist_stamper_node
   DESTINATION lib/${PROJECT_NAME}
-)
-
-install(PROGRAMS
-    scripts/driver.py
-    DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

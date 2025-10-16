@@ -71,19 +71,30 @@
 #elif defined(ARDUINO_SINGLE_CHANNEL_ENC_COUNTER)
   volatile uint64_t left_enc_cnt {0};
   volatile uint64_t right_enc_cnt {0};
-  
+  volatile int left_dir {1};
+  volatile int right_dir {1};
+
   ISR (LEFT_PCINT_VECTOR) {
-    ++left_enc_cnt;
+    left_enc_cnt += left_dir;
   }
 
   ISR (RIGHT_PCINT_VECTOR) {
-    ++right_enc_cnt;
+    right_enc_cnt += right_dir;
   }
 
  
   
   volatile uint64_t last_left_enc_cnt {0}, last_right_enc_cnt {0};
-  
+  volatile float left_spd {0.0}, right_spd {0.0};
+ 
+
+  void setDirection(int i, int dir) {
+    if (i == LEFT) {
+      left_dir = dir;
+    } else {
+      right_dir = dir;
+    }
+  }
   long readEncoder(int i) {
     return (i == LEFT) ? left_enc_cnt : right_enc_cnt;
   }
@@ -109,19 +120,19 @@
   constexpr auto CIRCUMFERENCE { 3.14 * 0.065 };
   constexpr auto DISTANCE_PER_TICK { CIRCUMFERENCE / 40};
   
+  void updateMotorSpeed() {
+    left_spd = float(left_enc_cnt - last_left_enc_cnt) * DISTANCE_PER_TICK;
+    right_spd = float(right_enc_cnt - last_right_enc_cnt) * DISTANCE_PER_TICK;
+    last_left_enc_cnt = left_enc_cnt;
+    last_right_enc_cnt = right_enc_cnt;
+  }
+
   float getMotorSpeedMPerSec(int i) {
-    float speed {0};
-
     if (i == LEFT) {
-      speed = float(left_enc_cnt - last_left_enc_cnt) * DISTANCE_PER_TICK;
-      last_left_enc_cnt = left_enc_cnt;
+      return left_spd;
     } else {
-      speed = float(right_enc_cnt - last_right_enc_cnt) * DISTANCE_PER_TICK;
-      last_right_enc_cnt = right_enc_cnt;
+      return right_spd;
     }
-
-    // speed *= 0.065 * 3.14;
-    return speed;
   }
 #else
   #error A encoder driver must be selected!

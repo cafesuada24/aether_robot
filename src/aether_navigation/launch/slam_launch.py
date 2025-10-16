@@ -16,6 +16,7 @@ def generate_launch_description() -> LaunchDescription:
     # Input parameters declaration
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    slam_params_file = LaunchConfiguration('slam_params_file')
     use_sim_time = LaunchConfiguration('use_sim_time')
     autostart = LaunchConfiguration('autostart')
     use_respawn = LaunchConfiguration('use_respawn')
@@ -45,10 +46,16 @@ def generate_launch_description() -> LaunchDescription:
         'namespace', default_value='', description='Top-level namespace',
     )
 
+    declare_slam_params_file_cmd = DeclareLaunchArgument(
+        'slam_params_file',
+        default_value=os.path.join(pkg_share_dir, 'params', 'mapper_params_online_async.yaml'),
+        description='Full path to the ROS2 parameters file to use for slam_toolbox node',
+    )
+
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
-        default_value=os.path.join(pkg_share_dir, 'params', 'mapper_params_online_async.yaml'),
-        description='Full path to the ROS2 parameters file to use for all launched nodes',
+        default_value=os.path.join(pkg_share_dir, 'params', 'nav2_params.yaml'),
+        description='Full path to the ROS2 parameters file to use for nav2 nodes',
     )
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -100,9 +107,9 @@ def generate_launch_description() -> LaunchDescription:
     # If the provided param file doesn't have slam_toolbox params, we must remove the 'params_file'
     # LaunchConfiguration, or it will be passed automatically to slam_toolbox and will not load
     # the default file
-    has_slam_toolbox_params = HasNodeParams(
-        source_file=params_file, node_name='slam_toolbox',
-    )
+    # has_slam_toolbox_params = HasNodeParams(
+    #     source_file=params_file, node_name='slam_toolbox',
+    # )
 
     start_slam_toolbox_cmd = GroupAction(
 
@@ -113,17 +120,17 @@ def generate_launch_description() -> LaunchDescription:
             SetRemap(src='/tf_static', dst='tf_static'),
             SetRemap(src='/map', dst='map'),
 
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(slam_launch_file),
-                launch_arguments={'use_sim_time': use_sim_time}.items(),
-                condition=UnlessCondition(has_slam_toolbox_params),
-            ),
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource(slam_launch_file),
+            #     launch_arguments={'use_sim_time': use_sim_time}.items(),
+            #     condition=UnlessCondition(has_slam_toolbox_params),
+            # ),
 
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(slam_launch_file),
                 launch_arguments={'use_sim_time': use_sim_time,
-                                  'slam_params_file': params_file}.items(),
-                condition=IfCondition(has_slam_toolbox_params),
+                                  'slam_params_file': slam_params_file}.items(),
+                # condition=IfCondition(has_slam_toolbox_params),
             ),
         ],
     )
@@ -132,6 +139,7 @@ def generate_launch_description() -> LaunchDescription:
 
     # Declare the launch options
     ld.add_action(declare_namespace_cmd)
+    ld.add_action(declare_slam_params_file_cmd)
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_autostart_cmd)

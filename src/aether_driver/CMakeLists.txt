@@ -8,7 +8,10 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(aether_interfaces REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(pluginlib REQUIRED)
 
 add_library(serial_lib SHARED
   src/lib/serial/serial.cc
@@ -26,6 +29,22 @@ target_include_directories(arduino_lib PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(arduino_lib serial_lib)
 
+add_library(diffdrive_arduino SHARED src/diffdrive_arduino.cpp src/wheel.cpp)
+target_include_directories(diffdrive_arduino
+  PRIVATE
+  include
+)
+target_link_libraries(diffdrive_arduino
+  arduino_lib
+)
+ament_target_dependencies(diffdrive_arduino
+  rclcpp
+  rclcpp_lifecycle
+  hardware_interface
+  pluginlib
+)
+pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
+
 add_executable(driver_node src/nodes/driver_node.cpp)
 target_link_libraries(driver_node
   serial_lib
@@ -34,6 +53,18 @@ target_link_libraries(driver_node
 ament_target_dependencies(driver_node
   "rclcpp"
   "aether_interfaces"
+)
+
+install(TARGETS
+  arduino_lib
+  serial_lib
+  diffdrive_arduino
+  DESTINATION lib
+)
+
+install(TARGETS
+  driver_node
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
@@ -48,15 +79,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(TARGETS
-  arduino_lib
-  serial_lib
-  DESTINATION lib
-)
-
-install(TARGETS
-  driver_node
-  DESTINATION lib/${PROJECT_NAME}
+ament_export_libraries(
+  diffdrive_arduino
 )
 
 ament_package()

@@ -1,6 +1,7 @@
 /build
 /install
 /venv
+/.venv
 /requirements.txt
 log
 .env
