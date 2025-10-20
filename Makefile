@@ -33,6 +33,9 @@ launch_sim:
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=false
 
+run_rviz_sim:
+	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=true
+
 build_docker_container: Dockerfile
 	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
 
