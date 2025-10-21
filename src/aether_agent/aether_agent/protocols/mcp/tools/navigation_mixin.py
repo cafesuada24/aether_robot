@@ -1,7 +1,6 @@
 import asyncio
 import math
 from abc import abstractmethod
-from functools import partial
 from uuid import uuid4
 
 from chromadb import Collection
@@ -169,8 +168,7 @@ class NavigationMixin:
             name (str): name of the destination point.
 
         Returns:
-            bool: true if the goal command is sent,
-                false if the destination doesn't exist or other errors.
+            TextContent: a text message containing action result.
         """
         query_results = self._collection.query(
             query_texts=[name],
@@ -223,12 +221,11 @@ class NavigationMixin:
             goal_pose,
             feedback_callback=lambda feedback: self.navigate_to_pose_feedback_callback(feedback, ctx),
         )
+        future.add_done_callback(lambda fut: self.navigate_to_pose_response_callback(fut, ctx))
 
-        while not future.done():
+        while not future.done() or not future.result().get_result_async().done():
             await asyncio.sleep(1e-4)
 
-        while not future.result().get_result_async().done():
-            await asyncio.sleep(1e-4)
 
         return TextContent(type='text', text=f'Goal executing: {name}')
 
