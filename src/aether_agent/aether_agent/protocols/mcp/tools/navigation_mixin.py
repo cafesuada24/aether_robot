@@ -1,65 +1,52 @@
-# type: ignore
 import asyncio
 import math
+from abc import abstractmethod
 from functools import partial
-from typing import Annotated, Literal, override
 from uuid import uuid4
 
-import chromadb
-import rclpy
-from geometry_msgs.msg import TwistStamped, Vector3
+from chromadb import Collection
+from geometry_msgs.msg import Vector3
+from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.server import Context
 from mcp.types import TextContent
 from nav2_msgs.action import NavigateToPose
 from rclpy.action.client import ActionClient
-from rclpy.node import Node
+from rclpy.clock import Clock
+from rclpy.impl.rcutils_logger import RcutilsLogger
 from rclpy.task import Future
-from rclpy.time import Time
-from std_msgs.msg import String
-from tf2_ros import Buffer, TransformListener
-
-from aether_agent.protocols.mcp import mcp
+from tf2_ros import Time
+from tf2_ros.buffer import Buffer
 
 
-class MCPServerNode(Node):
-    def __init__(self) -> None:
-        super().__init__('mcp_node')
+class NavigationMixin:
 
-        self.__tf_buffer = Buffer()
-        self.__tf_listener = TransformListener(self.__tf_buffer, self)
+    _tf_buffer: Buffer
+    _collection: Collection
+    _mcp: FastMCP
+    _nav_to_pose_client: ActionClient
+    _loop: asyncio.AbstractEventLoop
+    # def __init__(self) -> None:
 
-        self.__db_client = chromadb.PersistentClient()
-        self.__collection = self.__db_client.get_or_create_collection(
-            name='locations',
-            metadata={
-                'description': 'This collection saves destinations marked by users',
-            },  # pyright: ignore
-            configuration={
-                'hnsw': {
-                    'space': 'cosine',
-                },
-            },
-        )
-        self.__nav_to_pose_client = ActionClient(
-            self,
-            NavigateToPose,
-            '/navigate_to_pose',
-        )
+    def _load_tools(self) -> None:
+        assert self._mcp is not None
+        self._mcp.add_tool(self.get_locations)
+        self._mcp.add_tool(self.where_am_i)
+        self._mcp.add_tool(self.save_point)
+        self._mcp.add_tool(self.navigate_to)
+        # self.__mcp.add_tool(self.move)
 
-        self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10)  # pyright: ignore
+    @abstractmethod
+    def get_logger(self) -> RcutilsLogger:
+        raise NotImplementedError
 
-        self.__loop = asyncio.get_running_loop()
-
-
-        mcp.add_tool(self.get_locations)
-        mcp.add_tool(self.where_am_i)
-        mcp.add_tool(self.save_point)
-        mcp.add_tool(self.navigate_to)
-        mcp.add_tool(self.move)
+    @abstractmethod
+    def get_clock(self) -> Clock:
+        raise NotImplementedError
 
     def get_current_pose(self) -> Vector3:
         """Returns 2D position from map frame."""
-        trans = self.__tf_buffer.lookup_transform('map', 'base_footprint', Time())
+        assert self._tf_buffer is not None
+        trans = self._tf_buffer.lookup_transform('map', 'base_footprint', Time())
         return trans.transform.translation  # pyright: ignore
 
     def distance(self, p1: Vector3, p2: Vector3) -> float:
@@ -69,7 +56,8 @@ class MCPServerNode(Node):
     # @mcp.tool()
     def get_locations(self) -> list[tuple[str, tuple[float, float]]]:
         """Get the saved waypoints."""
-        get_results = self.__collection.get()
+        assert self._collection is not None
+        get_results = self._collection.get()
         if not get_results['ids']:
             return []
 
@@ -86,8 +74,9 @@ class MCPServerNode(Node):
     # @mcp.tool()
     def where_am_i(self) -> tuple[float, float] | str:
         """Return the current position of robot by the location's label or 3D position if not labeled."""
+        assert self._collection is not None
         loc = self.get_current_pose()
-        all_points = self.__collection.get()
+        all_points = self._collection.get()
         if all_points['documents'] is None or all_points['metadatas'] is None:
             return [loc.x, loc.y]  # pyright: ignore
         for doc, meta in zip(
@@ -104,10 +93,11 @@ class MCPServerNode(Node):
     # @mcp.tool()
     def save_point(self, name: str) -> None:
         """Save the current position as name."""
+        assert self._collection is not None
         pose = self.get_current_pose()
         # self.__points[name] = pose
         # await self.__destination_collection.upsert(await self.__create_destination(name, pose[0], pose[1]))
-        self.__collection.add(
+        self._collection.add(
             ids=[str(uuid4())],
             documents=[name],
             metadatas=[{'x': pose.x, 'y': pose.y}],
@@ -118,51 +108,60 @@ class MCPServerNode(Node):
 
     def navigate_to_pose_feedback_callback(
         self,
-        ctx: Context,  # pyright: ignore
         feedback_msg: NavigateToPose.Feedback,
+        ctx: Context,  # pyright: ignore
     ) -> None:
-        asyncio.run_coroutine_threadsafe(ctx.report_progress(feedback_msg.feedback.distance_remaining), self.__loop)
+        asyncio.run_coroutine_threadsafe(
+            ctx.report_progress(feedback_msg.feedback.distance_remaining), self._loop
+        )
 
     def navigate_to_pose_result_callback(
         self,
-        ctx: Context,  # pyright: ignore
         future: Future,
+        ctx: Context,  # pyright: ignore
     ):
         result = future.result().result
         status = future.result().status
 
-        if status == 4: # GoalStatus.STATUS_SUCCEEDED
-            asyncio.run_coroutine_threadsafe(ctx.info('Navigation Goal Succeeded!'), self.__loop)
+        if status == 4:  # GoalStatus.STATUS_SUCCEEDED
+            asyncio.run_coroutine_threadsafe(
+                ctx.info('Navigation Goal Succeeded!'), self._loop
+            )
             self.get_logger().info('Navigation Goal Succeeded!')
         else:
-            asyncio.run_coroutine_threadsafe(ctx.warning(f'Navigation Goal Failed with status: {status}'), self.__loop)
+            asyncio.run_coroutine_threadsafe(
+                ctx.warning(f'Navigation Goal Failed with status: {status}'),
+                self._loop,
+            )
             self.get_logger().warn(f'Navigation Goal Failed with status: {status}')
 
     def navigate_to_pose_response_callback(
         self,
-        ctx: Context,  # pyright: ignore
         future: Future,
+        ctx: Context,  # pyright: ignore
     ) -> None:
         goal_handle = future.result()
 
         if not goal_handle.accepted:
-            asyncio.run_coroutine_threadsafe(ctx.error('Goal rejected by server.'), self.__loop)
+            asyncio.run_coroutine_threadsafe(
+                ctx.error('Goal rejected by server.'), self._loop
+            )
             self.get_logger().info('Goal rejected by server.')
             return
         self.get_logger().info('Goal accepted by server. Waiting for result...')
-        asyncio.run_coroutine_threadsafe(ctx.info('Goal accepted by server. Waiting for result...'), self.__loop)
+        asyncio.run_coroutine_threadsafe(
+            ctx.info('Goal accepted by server. Waiting for result...'), self._loop
+        )
 
         result = goal_handle.get_result_async()
 
-        result_callback = partial(self.navigate_to_pose_result_callback, ctx)
-        result.add_done_callback(result_callback)
-
+        result.add_done_callback(lambda future: self.navigate_to_pose_result_callback(future, ctx))
 
     # @mcp.tool()
     async def navigate_to(
         self,
         name: str,
-        ctx: Context, # pyright: ignore
+        ctx: Context,  # pyright: ignore
     ) -> TextContent:
         """Navigate to a saved point.
 
@@ -173,7 +172,7 @@ class MCPServerNode(Node):
             bool: true if the goal command is sent,
                 false if the destination doesn't exist or other errors.
         """
-        query_results = self.__collection.query(
+        query_results = self._collection.query(
             query_texts=[name],
             n_results=1,
             include=['metadatas', 'distances'],
@@ -213,19 +212,17 @@ class MCPServerNode(Node):
 
         self.get_logger().info('Waiting for action server...')
         # Wait for the action server to be available
-        self.__nav_to_pose_client.wait_for_server()
+        self._nav_to_pose_client.wait_for_server()
 
-        self.get_logger().info(f'Sending goal to ({dest_point[0]:.2f}, {dest_point[1]:.2f})')
-
-        feedback_callback = partial(self.navigate_to_pose_feedback_callback, ctx)
-
-        future = self.__nav_to_pose_client.send_goal_async(
-            goal_pose,
-            feedback_callback=feedback_callback,
+        self.get_logger().info(
+            f'Sending goal to ({dest_point[0]:.2f}, {dest_point[1]:.2f})'
         )
 
-        response_callback = partial(self.navigate_to_pose_response_callback, ctx)
-        future.add_done_callback(response_callback)
+
+        future = self._nav_to_pose_client.send_goal_async(
+            goal_pose,
+            feedback_callback=lambda feedback: self.navigate_to_pose_feedback_callback(feedback, ctx),
+        )
 
         while not future.done():
             await asyncio.sleep(1e-4)
@@ -236,75 +233,44 @@ class MCPServerNode(Node):
         return TextContent(type='text', text=f'Goal executing: {name}')
 
     # @mcp.tool()
-    def move(
-        self,
-        direction: Annotated[str, Literal['l', 'r', 'f', 'b']],
-        speed: Annotated[float, 'values between 0.0 and 1.0'] = 0.5,
-    ) -> bool:
-        """Move the robot in a specified direction.
-
-        Args:
-            direction (str): direction to move
-                left (l), right (r), f (forward), b (backward)
-            speed (float): speed to move, must be a float between (0.0 and 1.0). (Defaut: 0.5)
-
-        Returns:
-            boolean - whether the command is sent to robot driver
-        """
-        if isinstance(speed, str):
-            try:
-                speed = int(speed)
-            except Exception:
-                self.get_logger().info(f'Invalid speed: {speed}')
-                return False
-        if speed < 0.0 or speed > 1.0:
-            self.get_logger().info(f'Invalid speed: {speed}')
-            return False
-        msg_to_pub = TwistStamped()
-        msg_to_pub.header.stamp = self.get_clock().now().to_msg()
-        match direction:
-            case 'f':
-                msg_to_pub.twist.linear.x = speed
-            case 'b':
-                msg_to_pub.twist.linear.x = -speed
-            case 'l':
-                msg_to_pub.twist.angular.z = speed
-            case 'r':
-                msg_to_pub.twist.angular.z = -speed
-            case _:
-                self.get_logger().info(f'Invalid direction: {direction}')
-                return False
-
-        self.__cmd_vel_publisher.publish(msg_to_pub)
-        return True
-
-
-async def ros_loop(node: Node) -> None:
-    """Rclpy main loop."""
-    while rclpy.ok():
-        rclpy.spin_once(node, timeout_sec=0)
-        await asyncio.sleep(1e-4)
-
-async def amain() -> None:
-    """Main node loop."""
-    node = MCPServerNode()
-    node.get_logger().info('Node started')  # pyright: ignore
-    # node.create_subscription(String, 'test', test, 10)
-
-    async with asyncio.TaskGroup() as tg:
-        mcp_loop_task = tg.create_task(mcp.run_streamable_http_async())
-        ros_loop_task = tg.create_task(ros_loop(node))
-
-
-def main() -> None:
-    """Entry point for node."""
-    rclpy.init()
-    try:
-        asyncio.run(amain())
-    finally:
-        rclpy.shutdown()
-    # ros_loop_task = asyncio.create_task(ros_loop())
-    # main_loop_task = asyncio.create_task(main_loop())
-    # await asyncio.wait([ros_loop_task, main_loop_task])
-    # asyncio.run(future)
-    # asyncio.get_event_loop().run_until_complete(future)
+    # def move(
+    #     self,
+    #     direction: Annotated[str, Literal['l', 'r', 'f', 'b']],
+    #     speed: Annotated[float, 'values between 0.0 and 1.0'] = 0.5,
+    # ) -> bool:
+    #     """Move the robot in a specified direction.
+    #
+    #     Args:
+    #         direction (str): direction to move
+    #             left (l), right (r), f (forward), b (backward)
+    #         speed (float): speed to move, must be a float between (0.0 and 1.0). (Defaut: 0.5)
+    #
+    #     Returns:
+    #         boolean - whether the command is sent to robot driver
+    #     """
+    #     if isinstance(speed, str):
+    #         try:
+    #             speed = int(speed)
+    #         except Exception:
+    #             self.get_logger().info(f'Invalid speed: {speed}')
+    #             return False
+    #     if speed < 0.0 or speed > 1.0:
+    #         self.get_logger().info(f'Invalid speed: {speed}')
+    #         return False
+    #     msg_to_pub = TwistStamped()
+    #     msg_to_pub.header.stamp = self.get_clock().now().to_msg()
+    #     match direction:
+    #         case 'f':
+    #             msg_to_pub.twist.linear.x = speed
+    #         case 'b':
+    #             msg_to_pub.twist.linear.x = -speed
+    #         case 'l':
+    #             msg_to_pub.twist.angular.z = speed
+    #         case 'r':
+    #             msg_to_pub.twist.angular.z = -speed
+    #         case _:
+    #             self.get_logger().info(f'Invalid direction: {direction}')
+    #             return False
+    #
+    #     self.__cmd_vel_publisher.publish(msg_to_pub)
+    #     return True
