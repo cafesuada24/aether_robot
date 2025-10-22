@@ -59,7 +59,9 @@ class MCPServerNode(Node, NavigationMixin, metaclass=ABCMeta):
     def _create_mcp(self) -> FastMCP:
         raise NotImplementedError
 
+    @abstractmethod
     async def run_server(self) -> None:
-        await self._mcp.run_streamable_http_async()
+        """Start mcp server."""
+        raise NotImplementedError
 
 

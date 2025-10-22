@@ -27,6 +27,11 @@ class StreamableHTTPMCPServerNode(MCPServerNode):
             port=self.get_parameter('port').get_parameter_value().integer_value,
         )
 
+    @override
+    async def run_server(self) -> None:
+        assert self._mcp is not None
+        await self._mcp.run_streamable_http_async()
+
 
 async def ros_loop(node: Node) -> None:
     """Rclpy main loop."""
