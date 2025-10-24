@@ -43,13 +43,16 @@ class MCPServerNode(Node, NavigationMixin, metaclass=ABCMeta):
         self._mcp = self._create_mcp()
         # self.__cmd_vel_publisher = self.create_publisher(TwistStamped, '/cmd_vel', 10)  # pyright: ignore
 
-        self._loop = asyncio.get_running_loop()
+        self._loop = self._get_event_loop()
 
         self.__load_tools()
 
     def __load_tools(self) -> None:
         NavigationMixin._load_tools(self)
 
+
+    def _get_event_loop(self) -> asyncio.AbstractEventLoop:
+        return asyncio.get_running_loop()
 
     @abstractmethod
     def _declare_parameters(self) -> None:
