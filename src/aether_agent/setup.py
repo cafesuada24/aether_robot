@@ -34,6 +34,7 @@ setup(
         'console_scripts': [
             'llm_service = scripts.llm_service:main',
             'streamable_http_mcp_server = scripts.streamable_http_mcp_server:main',
+            'mcp_client = scripts.mcp_client:main',
         ],
     },
 )
