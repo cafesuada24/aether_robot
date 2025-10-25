@@ -16,8 +16,8 @@ from aether_interfaces.srv import LLMPrompt
 load_dotenv()
 
 
-class MCPClient(Node):
-    """A client that combine user prompt and MCP tools to query LLM, gathers results and returns it back to user."""
+class LLMClient(Node):
+    """An LLM client that is able to use MCP."""
 
     def __init__(self) -> None:
         super().__init__('mcp_client')
@@ -139,16 +139,6 @@ class MCPClient(Node):
                 'role': 'user',
                 'content': query,
             },
-        ]
-
-        response = await self.__session.list_tools()
-        available_tools = [
-            {
-                'name': tool.name,
-                'description': tool.description,
-                'input_schema': tool.inputSchema,
-            }
-            for tool in response.tools
         ]
 
         gemini_model = (

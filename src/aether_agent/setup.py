@@ -33,7 +33,7 @@ setup(
     entry_points={
         'console_scripts': [
             'streamable_http_mcp_server = scripts.streamable_http_mcp_server:main',
-            'mcp_client = scripts.mcp_client:main',
+            'llm_client = scripts.mcp_client:main',
         ],
     },
 )
