@@ -25,7 +25,7 @@ class LLMClient(Node):
         self.__declare_parameters()
 
         self.__session: ClientSession | None = None
-        self.__exit_stack = AsyncExitStack()
+        self.__exit_stack: AsyncExitStack | None = None
         self.__genai_client = genai.Client(
             api_key=os.getenv('GOOGLE_GENAI_API_KEY'),
         )
@@ -56,9 +56,15 @@ class LLMClient(Node):
         match transport_protocol:
             case 'stdio':
                 await self.__connect_to_stdio_mcp_server()
+
+            case 'streamable_http':
+                await self.__connect_to_streamable_http_server()
+            case 'none':
+                self.__session = None
+                return
             case _:
                 raise ValueError(
-                    "transport protocol must be in one of ['stdio', 'streamable_http']",
+                    "transport protocol must be in one of ['stdio', 'streamable_http', 'none']",
                 )
 
     def cleanup(self) -> None:
@@ -90,30 +96,14 @@ class LLMClient(Node):
         return response
 
     async def __connect_to_stdio_mcp_server(self) -> None:
-        server_script_path = (
-            self.get_parameter('stdio.server_script_path')
-            .get_parameter_value()
-            .string_value
-        )
-        server_script_path = cast('str', server_script_path)
-
-        is_python = server_script_path.endswith('.py')
-        is_js = server_script_path.endswith('.js')
-        if not (is_python or is_js):
-            raise ValueError('Server script must be a .py or.js file')
+        if self.__exit_stack is None:
+            self.__exit_stack = AsyncExitStack()
 
         server_params = StdioServerParameters(
             command='ros2',
             args=['run', 'aether_agent', 'stdio_mcp_server'],
-            env=os.environ,
+            env=dict(os.environ),
         )
-
-        # async with (
-        #     stdio_client(server_params) as (read_stream, write_stream),
-        #     ClientSession(read_stream, write_stream) as session,
-        # ):
-        #     # self.__session = session
-        #     await session.initialize()
 
         self.__stdio, self.__write = await self.__exit_stack.enter_async_context(
             stdio_client(server_params),
@@ -131,6 +121,9 @@ class LLMClient(Node):
             + '\n\t - '.join([tool.name for tool in tools]),
         )
 
+    async def __connect_to_streamable_http_server(self) -> None:
+        ...
+
     async def __process_query(self, query: str) -> str:
         """Process query using Gemini and available tools."""
         self.get_logger().info('Received request, processing...')
@@ -141,10 +134,9 @@ class LLMClient(Node):
             },
         ]
 
-        gemini_model = (
+        gemini_model = cast('str',
             self.get_parameter('gemini_model').get_parameter_value().string_value
         )
-        gemini_model = cast('str', gemini_model)
         config = self.__session and genai.types.GenerateContentConfig(
             temperature=0,
             tools=[self.__session],
@@ -169,17 +161,11 @@ class LLMClient(Node):
     def __declare_parameters(self) -> None:
         self.declare_parameter('gemini_model', 'gemini-2.5-flash')
         self.declare_parameter('transport_protocol', 'stdio')
-        self.declare_parameter(
-            'stdio.server_script_path',
-            # 'src/aether_agent/aether_agent/protocols/mcp/stdio_mcp_server.py',
-            'src/aether_agent/scripts/stdio_mcp_server.py',
-        )
-
 
 def main() -> None:
     """Node entry point."""
     rclpy.init()
-    node = MCPClient()
+    node = LLMClient()
     executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(node)
 
