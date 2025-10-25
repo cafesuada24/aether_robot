@@ -3,6 +3,7 @@
 /venv
 /.venv
 /requirements.txt
+/chroma
 log
 .env
 __pycache__
