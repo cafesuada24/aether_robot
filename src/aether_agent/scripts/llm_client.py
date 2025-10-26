@@ -8,7 +8,7 @@ import rclpy
 import rclpy.executors
 from dotenv import load_dotenv
 from google import genai
-from mcp import ClientSession, StdioServerParameters, stdio_client
+from mcp import ClientSession
 from rclpy.node import Node
 
 from aether_interfaces.srv import LLMPrompt
@@ -42,7 +42,8 @@ class LLMClient(Node):
         )
         self.__aio_thread.start()
         future = asyncio.run_coroutine_threadsafe(
-            self.connect_to_server(), self.__aio_event_loop
+            self.connect_to_server(),
+            self.__aio_event_loop,
         )
         future.result(timeout=10.0)
 
@@ -71,7 +72,8 @@ class LLMClient(Node):
         """Clean up resources."""
         self.get_logger().info('Cleaning up...')
         asyncio.run_coroutine_threadsafe(
-            self.__exit_stack.aclose(), self.__aio_event_loop
+            self.__exit_stack.aclose(),
+            self.__aio_event_loop,
         )
         self.get_logger().info('Stopping event loop...')
         if self.__aio_thread.is_alive():
@@ -95,7 +97,37 @@ class LLMClient(Node):
 
         return response
 
+    def __get_streamablehttp_server_url(self) -> str:
+        use_https = cast(
+            'bool',
+            self.get_parameter('streamable_http.use_https')
+            .get_parameter_value()
+            .bool_value,
+        )
+        host = cast(
+            'str',
+            self.get_parameter('streamable_http.host')
+            .get_parameter_value()
+            .string_value,
+        )
+        port = cast(
+            'int',
+            self.get_parameter('streamable_http.port')
+            .get_parameter_value()
+            .integer_value,
+        )
+        path = cast(
+            'str',
+            self.get_parameter('streamable_http.path')
+            .get_parameter_value()
+            .string_value,
+        )
+
+        return f'http{"s" if use_https else ""}://{host}:{port}/{path}'
+
     async def __connect_to_stdio_mcp_server(self) -> None:
+        from mcp.client.stdio import stdio_client, StdioServerParameters
+
         if self.__exit_stack is None:
             self.__exit_stack = AsyncExitStack()
 
@@ -105,11 +137,11 @@ class LLMClient(Node):
             env=dict(os.environ),
         )
 
-        self.__stdio, self.__write = await self.__exit_stack.enter_async_context(
+        read_stream, write_stream = await self.__exit_stack.enter_async_context(
             stdio_client(server_params),
         )
         self.__session = await self.__exit_stack.enter_async_context(
-            ClientSession(self.__stdio, self.__write),
+            ClientSession(read_stream, write_stream),
         )
 
         await self.__session.initialize()
@@ -122,7 +154,28 @@ class LLMClient(Node):
         )
 
     async def __connect_to_streamable_http_server(self) -> None:
-        ...
+        from mcp.client.streamable_http import streamablehttp_client
+
+        if self.__exit_stack is None:
+            self.__exit_stack = AsyncExitStack()
+
+        url = self.__get_streamablehttp_server_url()
+        read_stream, write_stream, _ = await self.__exit_stack.enter_async_context(
+            streamablehttp_client(url, timeout=10.0),
+        )
+
+        self.__session = await self.__exit_stack.enter_async_context(
+            ClientSession(read_stream, write_stream),
+        )
+
+        await self.__session.initialize()
+
+        response = await self.__session.list_tools()
+        tools = response.tools
+        self.get_logger().info(
+            'Connected to server with tools: \n'
+            + '\n\t - '.join([tool.name for tool in tools]),
+        )
 
     async def __process_query(self, query: str) -> str:
         """Process query using Gemini and available tools."""
@@ -134,8 +187,8 @@ class LLMClient(Node):
             },
         ]
 
-        gemini_model = cast('str',
-            self.get_parameter('gemini_model').get_parameter_value().string_value
+        gemini_model = cast(
+            'str', self.get_parameter('gemini_model').get_parameter_value().string_value
         )
         config = self.__session and genai.types.GenerateContentConfig(
             temperature=0,
@@ -161,6 +214,11 @@ class LLMClient(Node):
     def __declare_parameters(self) -> None:
         self.declare_parameter('gemini_model', 'gemini-2.5-flash')
         self.declare_parameter('transport_protocol', 'stdio')
+        self.declare_parameter('streamable_http.use_https', False)
+        self.declare_parameter('streamable_http.host', '127.0.0.1')
+        self.declare_parameter('streamable_http.port', 8000)
+        self.declare_parameter('streamable_http.path', 'mcp')
+
 
 def main() -> None:
     """Node entry point."""
@@ -175,7 +233,7 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        node.get_logger().error(f'Error: {e}')
+        node.get_logger().error(f'Error: {str(e)}')
     finally:
         node.cleanup()
         if rclpy.ok():
