@@ -17,8 +17,10 @@ PKG_NAME: str = 'aether_agent'
 def generate_launch_description() -> LaunchDescription:
     """Generate launch description that will launch agent."""
     pkg_share_dir = get_package_share_directory(PKG_NAME)
-    transport_protocol = LaunchConfiguration('mcp_transport_protocol')
+
     params_file = LaunchConfiguration('params_file')
+    transport_protocol = LaunchConfiguration('mcp_transport_protocol')
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
     declare_transport_protocol_cmd = DeclareLaunchArgument(
         'mcp_transport_protocol',
@@ -31,6 +33,12 @@ def generate_launch_description() -> LaunchDescription:
         description='agent launch parameters',
         default_value=os.path.join(pkg_share_dir, 'params', 'agent.yaml'),
     )
+    declare_use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='False',
+        description='Use simulation (Gazebo) clock if True',
+        choices=['True', 'False'],
+    )
     use_streamablehttp = EqualsSubstitution(transport_protocol, 'streamable_http')
     start_server = GroupAction(
         actions=[
@@ -41,6 +49,7 @@ def generate_launch_description() -> LaunchDescription:
                     params_file,
                     {
                         'transport_protocol': transport_protocol,
+                        'use_sim_time': use_sim_time,
                     },
                 ],
                 condition=UnlessCondition(use_streamablehttp),
@@ -48,7 +57,7 @@ def generate_launch_description() -> LaunchDescription:
             Node(
                 package=PKG_NAME,
                 executable='streamable_http_mcp_server',
-                parameters=[params_file],
+                parameters=[params_file, {'use_sim_time': use_sim_time}],
                 condition=IfCondition(use_streamablehttp),
             ),
             TimerAction(
@@ -60,6 +69,7 @@ def generate_launch_description() -> LaunchDescription:
                             params_file,
                             {
                                 'transport_protocol': transport_protocol,
+                                'use_sim_time': use_sim_time,
                             },
                         ],
                     ),
@@ -71,6 +81,7 @@ def generate_launch_description() -> LaunchDescription:
     )
     ld = LaunchDescription()
 
+    ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_transport_protocol_cmd)
     ld.add_action(declare_params_file_cmd)
 
