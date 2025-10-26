@@ -2,7 +2,7 @@ import asyncio
 import os
 import threading
 from contextlib import AsyncExitStack
-from typing import cast
+from typing import cast, override
 
 import rclpy
 import rclpy.executors
@@ -76,9 +76,16 @@ class LLMClient(Node):
             self.__aio_event_loop,
         )
         self.get_logger().info('Stopping event loop...')
+        for task in asyncio.all_tasks(self.__aio_event_loop):
+            task.cancel()
         if self.__aio_thread.is_alive():
-            self.__aio_event_loop.call_soon_threadsafe(self.__aio_event_loop.stop)
+            self.__aio_event_loop.call_soon_threadsafe(self.__aio_event_loop.close)
             self.__aio_thread.join(timeout=5.0)
+
+    @override
+    def destroy_node(self) -> None:
+        self.cleanup()
+        return super().destroy_node()
 
     def __chat_service_callback(
         self,
@@ -235,7 +242,6 @@ def main() -> None:
     except Exception as e:
         node.get_logger().error(f'Error: {str(e)}')
     finally:
-        node.cleanup()
         if rclpy.ok():
             node.destroy_node()
         executor.shutdown()
