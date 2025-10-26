@@ -74,3 +74,5 @@ def main() -> None:
     # await asyncio.wait([ros_loop_task, main_loop_task])
     # asyncio.run(future)
     # asyncio.get_event_loop().run_until_complete(future)
+if __name__ == '__main__':
+    main()

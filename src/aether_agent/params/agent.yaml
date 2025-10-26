@@ -1,4 +1,4 @@
-mcp_client:
+llm_client:
   ros__parameters:
     gemini_model: 'gemini-2.5-flash'
 

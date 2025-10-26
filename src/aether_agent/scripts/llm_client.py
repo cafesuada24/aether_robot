@@ -20,7 +20,7 @@ class LLMClient(Node):
     """An LLM client that is able to use MCP."""
 
     def __init__(self) -> None:
-        super().__init__('mcp_client')
+        super().__init__('llm_client')
 
         self.__declare_parameters()
 
