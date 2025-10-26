@@ -24,6 +24,7 @@ def generate_launch_description() -> LaunchDescription:
     aether_nav_share = get_package_share_directory('aether_navigation')
     aether_webserver_share = get_package_share_directory('aether_webserver')
     aether_description_share = get_package_share_directory('aether_description')
+    aether_agent_share = get_package_share_directory('aether_agent')
     default_robot_description_path = os.path.join(
         aether_description_share,
         'sdf',
@@ -41,12 +42,13 @@ def generate_launch_description() -> LaunchDescription:
     use_localization = LaunchConfiguration('use_localization')
     map_yaml = LaunchConfiguration('map')
     webserver = LaunchConfiguration('webserver')
+    agent = LaunchConfiguration('agent')
 
     declare_model_path_cmd = DeclareLaunchArgument(
-            name='model',
-            default_value=default_robot_description_path,
-            description='Absolute path to robot model file',
-        )
+        name='model',
+        default_value=default_robot_description_path,
+        description='Absolute path to robot model file',
+    )
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
         default_value=os.path.join(pkg_share, 'map', 'my_map.yaml'),
@@ -78,6 +80,12 @@ def generate_launch_description() -> LaunchDescription:
         description='Whether to enable web server or not',
         choices=['True', 'False'],
     )
+    declare_agent_cmd = DeclareLaunchArgument(
+        'agent',
+        default_value='True',
+        description='Whether to enable agent or not',
+        choices=['True', 'False'],
+    )
 
     nav_bringup_launch_file = os.path.join(
         aether_nav_share,
@@ -90,6 +98,11 @@ def generate_launch_description() -> LaunchDescription:
         'params',
         'twist_mux.yaml',
     )
+    agent_launch_file = os.path.join(
+        aether_agent_share,
+        'launch',
+        'agent_launch.py',
+    )
 
     twist_mux_node = Node(
         package='twist_mux',
@@ -98,7 +111,6 @@ def generate_launch_description() -> LaunchDescription:
         remappings=[('/cmd_vel_out', '/wheel_controller/cmd_vel')],
         parameters=[twist_mux_params_file],
     )
-
 
     teleop_twist_joy = Node(
         package='teleop_twist_joy',
@@ -116,7 +128,9 @@ def generate_launch_description() -> LaunchDescription:
     # Websocket launch
     webserver_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(aether_webserver_share, 'launch', 'webserver_bringup_launch.py'),
+            os.path.join(
+                aether_webserver_share, 'launch', 'webserver_bringup_launch.py'
+            ),
         ),
         launch_arguments={
             'use_sim_time': sim_mode,
@@ -141,6 +155,14 @@ def generate_launch_description() -> LaunchDescription:
             'map': map_yaml,
             'container_name': 'aether_nav_container',
         }.items(),
+    )
+
+    agent_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(aether_agent_share),
+        launch_arguments={
+            'use_sim_time': sim_mode,
+        }.items(),
+        condition=IfCondition(agent),
     )
 
     robot_urdf_config = ParameterValue(
@@ -187,13 +209,11 @@ def generate_launch_description() -> LaunchDescription:
         arguments=['joint_state_broadcaster'],
     )
 
-
     robot_controller_spawner = Node(
         package='controller_manager',
         executable='spawner',
         arguments=['wheel_controller', '--param-file', robot_controllers],
     )
-
 
     delayed_joint_state_broadcaster = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -212,6 +232,7 @@ def generate_launch_description() -> LaunchDescription:
             declare_map_yaml_cmd,
             declare_webserver_cmd,
             declare_model_path_cmd,
+            declare_agent_cmd,
             # Launch nodes
             robot_state_publisher_node,
             hardware_bringup_launch,
@@ -222,5 +243,6 @@ def generate_launch_description() -> LaunchDescription:
             delayed_controller_manager_spawner,
             robot_controller_spawner,
             delayed_joint_state_broadcaster,
+            agent_launch,
         ],
     )
