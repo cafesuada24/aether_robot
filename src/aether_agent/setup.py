@@ -13,6 +13,7 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*')),
+        (os.path.join('share', package_name, 'params'), glob('params/*')),
     ],
     install_requires=[
         'setuptools',
@@ -33,6 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'streamable_http_mcp_server = scripts.streamable_http_mcp_server:main',
+            'stdio_mcp_server = scripts.stdio_mcp_server:main',
             'llm_client = scripts.llm_client:main',
         ],
     },
