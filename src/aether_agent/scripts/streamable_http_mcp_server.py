@@ -1,17 +1,32 @@
-# type: ignore
 import asyncio
+from threading import Thread
 from typing import override
 
 import rclpy
 from mcp.server.fastmcp.server import FastMCP
-from rclpy.node import Node
 
 from aether_agent.protocols.mcp.mcp_server_node import MCPServerNode
 
 
 class StreamableHTTPMCPServerNode(MCPServerNode):
     def __init__(self) -> None:
+        self.__aio_thread: Thread
         super().__init__('streamablehttp_mcp_server')
+
+        asyncio.run_coroutine_threadsafe(
+            self.run_server(),
+            self._loop,
+        )
+    @override
+    def _get_event_loop(self) -> asyncio.AbstractEventLoop:
+        new_event_loop = asyncio.new_event_loop()
+        self.__aio_thread = Thread(
+            target=new_event_loop.run_forever,
+            daemon=True,
+        )
+        self.__aio_thread.start()
+        return new_event_loop
+
 
     @override
     def _declare_parameters(self) -> None:
@@ -32,32 +47,28 @@ class StreamableHTTPMCPServerNode(MCPServerNode):
         assert self._mcp is not None
         await self._mcp.run_streamable_http_async()
 
-
-async def ros_loop(node: Node) -> None:
-    """Rclpy main loop."""
-    while rclpy.ok():
-        rclpy.spin_once(node, timeout_sec=0)
-        await asyncio.sleep(1e-4)
-
-
-async def amain() -> None:
-    """Main node loop."""
-    node = StreamableHTTPMCPServerNode()
-    node.get_logger().info('Node started')  # pyright: ignore
-    # node.create_subscription(String, 'test', test, 10)
-
-    async with asyncio.TaskGroup() as tg:
-        mcp_loop_task = tg.create_task(node.run_server())
-        ros_loop_task = tg.create_task(ros_loop(node))
-
+    @override
+    def destroy_node(self) -> None:
+        self.get_logger().info('Stopping event loop...')
+        for task in asyncio.all_tasks(self._loop):
+            task.cancel()
+        if self.__aio_thread.is_alive():
+            self._loop.call_soon_threadsafe(self._loop.close)
+            self.__aio_thread.join()
+        return super().destroy_node()
 
 def main() -> None:
     """Entry point for node."""
     rclpy.init()
+    node = StreamableHTTPMCPServerNode()
     try:
-        asyncio.run(amain())
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     finally:
-        rclpy.shutdown()
+        if rclpy.ok():
+            node.destroy_node()
+            rclpy.shutdown()
     # ros_loop_task = asyncio.create_task(ros_loop())
     # main_loop_task = asyncio.create_task(main_loop())
     # await asyncio.wait([ros_loop_task, main_loop_task])
