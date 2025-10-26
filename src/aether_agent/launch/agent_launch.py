@@ -37,10 +37,9 @@ def generate_launch_description() -> LaunchDescription:
             Node(
                 package=PKG_NAME,
                 executable='llm_client',
-                # arguments=['--ros-args', '-p', 'transport_protocol', transport_protocol],
                 parameters=[
+                    params_file,
                     {
-                        'params-file': params_file,
                         'transport_protocol': transport_protocol,
                     },
                 ],
@@ -58,8 +57,8 @@ def generate_launch_description() -> LaunchDescription:
                         package=PKG_NAME,
                         executable='llm_client',
                         parameters=[
+                            params_file,
                             {
-                                'params-file': params_file,
                                 'transport_protocol': transport_protocol,
                             },
                         ],
