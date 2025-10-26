@@ -15,7 +15,7 @@ class StdioMCPServerNode(MCPServerNode):
     def __init__(
         self,
     ) -> None:
-        super().__init__('mcp_server')
+        super().__init__('stdio_mcp_server')
 
     @override
     def _declare_parameters(self) -> None:
