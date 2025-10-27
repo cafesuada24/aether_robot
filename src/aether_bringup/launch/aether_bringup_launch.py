@@ -158,7 +158,7 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     agent_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(aether_agent_share),
+        PythonLaunchDescriptionSource(agent_launch_file),
         launch_arguments={
             'use_sim_time': sim_mode,
         }.items(),
