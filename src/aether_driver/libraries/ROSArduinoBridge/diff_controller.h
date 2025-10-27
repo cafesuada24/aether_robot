@@ -75,8 +75,8 @@ void doPID(SetPointInfo * p) {
   long output;
   int input;
 
-  //Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
-  input = (p->TargetTicksPerFrame < 0 ? -1 : 1) * (p->Encoder - p->PrevEnc);
+  // Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
+  input = p->Encoder - p->PrevEnc;
   Perror = p->TargetTicksPerFrame - input;
 
 
