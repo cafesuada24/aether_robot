@@ -8,8 +8,8 @@
 /* PID setpoint info For a Motor */
 typedef struct {
   double TargetTicksPerFrame;    // target speed in ticks per frame
-  long Encoder;                  // encoder count
-  long PrevEnc;                  // last encoder count
+  int64_t Encoder;                  // encoder count
+  int64_t PrevEnc;                  // last encoder count
 
   /*
   * Using previous input (PrevInput) instead of PrevError to avoid derivative kick,
@@ -75,8 +75,8 @@ void doPID(SetPointInfo * p) {
   long output;
   int input;
 
-  //Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
-  input = (p->TargetTicksPerFrame < 0 ? -1 : 1) * (p->Encoder - p->PrevEnc);
+  // Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
+  input = p->Encoder - p->PrevEnc;
   Perror = p->TargetTicksPerFrame - input;
 
 
