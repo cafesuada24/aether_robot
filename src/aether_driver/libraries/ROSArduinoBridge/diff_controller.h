@@ -26,7 +26,7 @@ typedef struct {
   //int Ierror;
   int ITerm;                    //integrated term
 
-  long output;                    // last motor setting
+  int output;                    // last motor setting
 }
 SetPointInfo;
 
@@ -38,10 +38,10 @@ SetPointInfo leftPID, rightPID;
 // int Ki = 0;
 // int Ko = 50;
 
-int Kp = 50;
-int Kd = 15;
-int Ki = 0;
-int Ko = 50;
+int Kp { 130 };
+int Kd { 30 };
+int Ki { 1 };                                                                                                                                                                                                                                         ;
+int Ko { 200 };
 
 unsigned char moving = 0; // is the base in motion?
 
@@ -71,12 +71,12 @@ void resetPID(){
 
 /* PID routine to compute the next motor commands */
 void doPID(SetPointInfo * p) {
-  long Perror;
-  long output;
-  int input;
+  int Perror;
+  int output;
+  long input;
 
   // Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
-  input = p->Encoder - p->PrevEnc;
+  input = 1L * p->Encoder - p->PrevEnc;
   Perror = p->TargetTicksPerFrame - input;
 
 
@@ -102,7 +102,7 @@ void doPID(SetPointInfo * p) {
   /*
   * allow turning changes, see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
   */
-    p->ITerm += Ki * Perror;
+  p->ITerm += Ki * Perror;
 
   p->output = output;
   p->PrevInput = input;
