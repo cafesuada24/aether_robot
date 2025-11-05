@@ -16,7 +16,6 @@ PKG_NAME: str = 'aether_gazebo'
 
 
 def generate_launch_description() -> LaunchDescription:
-    use_sim_time = LaunchConfiguration('use_sim_time')
     pkg_share = get_package_share_directory(PKG_NAME)
     ros_gz_sim_share = get_package_share_directory('ros_gz_sim')
     aether_bringup_share = get_package_share_directory('aether_bringup')
@@ -26,7 +25,12 @@ def generate_launch_description() -> LaunchDescription:
         'launch',
         'gz_spawn_model.launch.py',
     )
-    world_path = os.path.join(pkg_share, 'worlds', 'obstacle.world')
+    world_description_default = os.path.join(pkg_share, 'worlds', 'house.world')
+
+    # use_sim_time = LaunchConfiguration('use_sim_time')
+    world_sdf_file = LaunchConfiguration('world_sdf_file')
+    slam = LaunchConfiguration('slam')
+
 
 
 
@@ -48,7 +52,7 @@ def generate_launch_description() -> LaunchDescription:
             os.path.join(ros_gz_sim_share, 'launch', 'ros_gz_sim.launch.py'),
         ),
         launch_arguments={
-            'world_sdf_file': world_path,
+            'world_sdf_file': world_sdf_file,
             'create_own_container': 'True',
             'container_name': 'ros_gz_sim_container',
             'use_composition': 'True',
@@ -56,12 +60,6 @@ def generate_launch_description() -> LaunchDescription:
             'config_file': bridge_config_path,
         }.items(),
     )
-    # GzServer(
-    #     world_sdf_file=world_path,
-    #     container_name='ros_gz_container',
-    #     create_own_container='True',
-    #     use_composition='True',
-    # )
 
     gz_client_cmd = ExecuteProcess(cmd=['gz', 'sim', '-g', '-r'], output='screen')
 
@@ -74,14 +72,6 @@ def generate_launch_description() -> LaunchDescription:
             'z': '0.175',
         }.items(),
     )
-
-    # ros_gz_bridge = RosGzBridge(
-    #     bridge_name='ros_gz_bridge',
-    #     config_file=bridge_config_path,
-    #     container_name='ros_gz_container',
-    #     create_own_container='False',
-    #     use_composition='True',
-    # )
 
     aether_bringup_launch = GroupAction(
         [
@@ -96,6 +86,7 @@ def generate_launch_description() -> LaunchDescription:
                 ),
                 launch_arguments={
                     'sim_mode': 'True',
+                    'slam': slam,
                 }.items(),
             ),
         ],
@@ -103,19 +94,27 @@ def generate_launch_description() -> LaunchDescription:
 
     return LaunchDescription(
         [
+            # DeclareLaunchArgument(
+            #     name='use_sim_time',
+            #     default_value='True',
+            #     description='Flag to enable use_sim_time',
+            # ),
             DeclareLaunchArgument(
-                name='use_sim_time',
-                default_value='True',
-                description='Flag to enable use_sim_time',
+                name='world_sdf_file',
+                default_value=world_description_default,
+                description='Gazebo world sdf file',
             ),
-            # gz_sim,
+
+            DeclareLaunchArgument(
+                name='slam',
+                default_value='False',
+                description='Use SLAM mode',
+                choices=['False', 'True'],
+            ),
+
             gz_client_cmd,
-            # robot_state_publisher_node,
             gz_sim,
             spawn_entity,
-            # robot_localization_node,
-            # control_node,
-            # delay_joint_state_broadcaster_after_robot_controller_spawner,
             aether_bringup_launch,
         ],
     )
