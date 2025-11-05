@@ -19,10 +19,10 @@ launch_sim:
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=$(or $(use_sim_time), 'False')
 
-build_docker_container: Dockerfile
+build_docker_cont: Dockerfile
 	docker build --platform='linux/arm64/v8' -t aether-bot-armv8 .
 
-run_docker_container:
+run_docker_cont:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
 		--runtime=nvidia \
@@ -33,8 +33,8 @@ run_docker_container:
 
 		# --device=/dev/ttyUSB0 \
 		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
-shell_attach_docker:
-	docker exec -it aether_bot_cont bash
+new_docker_shell:
+	docker exec -it $(or $cont_name, 'aether_bot_cont') bash
 
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
