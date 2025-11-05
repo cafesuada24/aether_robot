@@ -1,4 +1,4 @@
-image: my_map.pgm
+image: obstacle_map.pgm
 mode: trinary
 resolution: 0.01
 origin: [-12, -5.89, 0]
