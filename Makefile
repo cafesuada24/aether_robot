@@ -28,7 +28,7 @@ launch_rsp:
 	ros2 launch aether_gazebo rsp.launch.py use_sim_time:=true
 
 launch_sim:
-	ros2 launch aether_gazebo launch_sim.launch.py
+	ros2 launch aether_gazebo launch_sim.py
 
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=false
