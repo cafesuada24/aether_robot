@@ -34,8 +34,8 @@ class Arduino {
 
   bool stop_motors();
 
-  bool set_pid_values(const float k_p, const float k_d, const float k_i,
-                      const float k_o);
+  bool set_pid_values(const uint16_t k_p, const uint16_t k_d, const uint16_t k_i,
+                      const uint16_t k_o);
   void read_encoder_values(int64_t& left, int64_t& right);
 
   void send_empty_message();
