@@ -26,9 +26,10 @@ run_docker_cont:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
 		--runtime=nvidia \
-		-e DISPLAY=:0 \
+		-e DISPLAY=$$DISPLAY \
 		-v ~/ros2_ws:/ros2_ws \
-		-v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+		-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+		-v ~/.Xauthority:/root/.Xauthority:ro \
 		--group-add video \
 		--device=/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0:/dev/ttyUSB0 \
 		--device=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0:/dev/ttyUSB1 \
