@@ -40,6 +40,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_init(
   arduino_.setup(cfg_.device, cfg_.baud_rate, cfg_.timeout_ms,
                  cfg_.enc_counts_per_rev, 0.065);
 
+
   RCLCPP_INFO(logger_, "Finished initialization");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -60,8 +61,10 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
   RCLCPP_INFO(logger_, "Connected to arduino nano.");
 
   arduino_.send_empty_message();
-  // arduino_.set_pid_values(30, 20, 0, 100);
-  arduino_.set_pid_values(400, 0, 2, 100);
+  if (arduino_.set_pid_values(400, 0, 2, 100) != 0) {
+    RCLCPP_ERROR(logger_, "Couldn't set PID values");
+    return hardware_interface::CallbackReturn::ERROR;
+  }
 
   RCLCPP_INFO(logger_, "Finished configuration.");
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -167,12 +170,13 @@ hardware_interface::return_type DiffDriveArduino::write(
     return hardware_interface::return_type::ERROR;
   }
 
-  // RCLCPP_INFO(logger_, "driving with speed: %f %f", l_wheel_.cmd,
-  // r_wheel_.cmd);
+  const int16_t left_ticks_per_loop{static_cast<int16_t>(l_wheel_.cmd / l_wheel_.rads_per_count /
+                                 cfg_.loop_rate_ms)};
+  const int16_t right_ticks_per_loop{static_cast<int16_t>(r_wheel_.cmd / r_wheel_.rads_per_count /
+                                  cfg_.loop_rate_ms)};
 
-  arduino_.drive(
-      l_wheel_.cmd / l_wheel_.rads_per_count / cfg_.loop_rate_ms,
-      r_wheel_.cmd / r_wheel_.rads_per_count / cfg_.loop_rate_ms);
+  RCLCPP_DEBUG(logger_, "passing ticks per loop: %d %d", left_ticks_per_loop, right_ticks_per_loop);
+  arduino_.drive(left_ticks_per_loop, right_ticks_per_loop);
 
   return hardware_interface::return_type::OK;
 }
