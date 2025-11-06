@@ -26,6 +26,7 @@ run_docker_cont:
 	docker run -it --rm --name aether_bot_cont \
 		--network=host \
 		--runtime=nvidia \
+		-e DISPLAY=:0 \
 		-v ~/ros2_ws:/ros2_ws \
 		-v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
 		--group-add video \

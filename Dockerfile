@@ -9,6 +9,9 @@ RUN apt update && apt install -y \
     python3-venv
 
 WORKDIR /ros2_ws
+
+ENV DISPLAY=:0
+
 COPY ./src ./src
 COPY ./scripts ./scripts
 # COPY ./requirements.txt ./
