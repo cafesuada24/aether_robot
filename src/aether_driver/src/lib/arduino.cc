@@ -152,8 +152,8 @@ void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
   right = std::atoll(token_2.c_str());
 };
 
-bool Arduino::set_pid_values(const float k_p, const float k_d, const float k_i,
-                             const float k_o) {
+bool Arduino::set_pid_values(const uint16_t k_p, const uint16_t k_d, const uint16_t k_i,
+                             const uint16_t k_o) {
   std::stringstream ss;
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
