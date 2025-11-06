@@ -43,5 +43,5 @@ new_docker_shell:
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
 		--ros-args -r /cmd_vel:=/key_cmd_vel\
-		-p stamped:=true -p use_sim_time:=$(or $(use_sim_time), 'False')
+		-p stamped:=true -p use_sim_time:=$(or $(use_sim_time), 'False')\
 		-p repeat_rate:=10.0
