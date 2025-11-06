@@ -69,8 +69,8 @@
     }
   }
 #elif defined(ARDUINO_SINGLE_CHANNEL_ENC_COUNTER)
-  volatile uint64_t left_enc_cnt {0};
-  volatile uint64_t right_enc_cnt {0};
+  volatile int64_t left_enc_cnt {0};
+  volatile int64_t right_enc_cnt {0};
   volatile int left_dir {1};
   volatile int right_dir {1};
 
@@ -84,7 +84,7 @@
 
  
   
-  volatile uint64_t last_left_enc_cnt {0}, last_right_enc_cnt {0};
+  volatile int64_t last_left_enc_cnt {0}, last_right_enc_cnt {0};
   volatile float left_spd {0.0}, right_spd {0.0};
  
 

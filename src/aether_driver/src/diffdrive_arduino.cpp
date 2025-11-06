@@ -61,7 +61,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
 
   arduino_.send_empty_message();
   // arduino_.set_pid_values(30, 20, 0, 100);
-  arduino_.set_pid_values(150, 60, 2, 200);
+  arduino_.set_pid_values(400, 0, 2, 100);
 
   RCLCPP_INFO(logger_, "Finished configuration.");
   return hardware_interface::CallbackReturn::SUCCESS;
