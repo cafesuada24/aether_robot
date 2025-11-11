@@ -13,6 +13,7 @@ find_package(nav2_map_server REQUIRED)
 find_package(nav2_lifecycle_manager REQUIRED)
 find_package(nav2_amcl REQUIRED)
 find_package(rclcpp_components REQUIRED)
+find_package(robot_localization REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
