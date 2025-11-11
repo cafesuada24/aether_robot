@@ -26,27 +26,29 @@ typedef struct {
   //int Ierror;
   int ITerm;                    //integrated term
 
-  int output;                    // last motor setting
+  float output;                    // last motor setting
 }
 SetPointInfo;
 
 SetPointInfo leftPID, rightPID;
 
 /* PID Parameters */
-// int Kp = 20;
-// int Kd = 12;
-// int Ki = 0;
-// int Ko = 50;
+int Kp = 20;
+int Kd = 12;
+int Ki = 0;
+int Ko = 50;
 
 // int Kp { 130 };
 // int Kd { 30 };
 // int Ki { 1 };                                                                                                                                                                                                                                         ;
 // int Ko { 200 };
 
-int Kp {450};
-int Kd {0};
-int Ki {2};
-int Ko { 100 };
+const int minPWM { 45 };
+
+// int Kp {200};
+// int Kd {0};
+// int Ki {0};
+// int Ko {100};
 unsigned char moving = 0; // is the base in motion?
 
 /*
@@ -76,7 +78,7 @@ void resetPID(){
 /* PID routine to compute the next motor commands */
 void doPID(SetPointInfo * p) {
   int Perror;
-  int output;
+  float output;
   long input;
 
   // Perror = p->TargetTicksPerFrame - (p->Encoder - p->PrevEnc);
@@ -91,7 +93,7 @@ void doPID(SetPointInfo * p) {
   */
   //output = (Kp * Perror + Kd * (Perror - p->PrevErr) + Ki * p->Ierror) / Ko;
   // p->PrevErr = Perror;
-  output = (Kp * Perror - Kd * (input - p->PrevInput) + p->ITerm) / Ko;
+  output = 1.0 * (Kp * Perror - Kd * (input - p->PrevInput) + p->ITerm) / Ko;
   p->PrevEnc = p->Encoder;
 
   output += p->output;
@@ -106,7 +108,7 @@ void doPID(SetPointInfo * p) {
   /*
   * allow turning changes, see http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-tuning-changes/
   */
-  p->ITerm += Ki * Perror;
+    p->ITerm += Ki * Perror;
 
   p->output = output;
   p->PrevInput = input;
@@ -133,8 +135,10 @@ void updatePID() {
   /* Compute PID update for each motor */
   doPID(&rightPID);
   doPID(&leftPID);
-
+  // Serial.print((leftPID.TargetTicksPerFrame == 0 ? 0 : (leftPID.TargetTicksPerFrame > 0 ? minPWM : -minPWM)) + floor(leftPID.output)); Serial.print(' '); Serial.println((rightPID.TargetTicksPerFrame == 0 ? 0 : (rightPID.TargetTicksPerFrame > 0 ? minPWM : -minPWM)) + floor(rightPID.output));
   /* Set the motor speeds accordingly */
-  setMotorSpeeds(leftPID.output, rightPID.output);
+  setMotorSpeeds(
+    (leftPID.TargetTicksPerFrame == 0 ? 0 : (leftPID.TargetTicksPerFrame > 0 ? minPWM : -minPWM)) + floor(leftPID.output), 
+    (rightPID.TargetTicksPerFrame == 0 ? 0 : (rightPID.TargetTicksPerFrame > 0 ? minPWM : -minPWM)) + floor(rightPID.output));
 }
 
