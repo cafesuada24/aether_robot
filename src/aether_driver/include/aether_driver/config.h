@@ -10,7 +10,7 @@ struct Config {
   std::string device{"/dev/ttyUSB0"};
   int baud_rate{57600};
   int timeout_ms{1000};
-  int enc_counts_per_rev{40};
+  int enc_counts_per_rev{20};
 };
 }  // namespace aether_driver
 
