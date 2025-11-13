@@ -136,6 +136,16 @@ bool Arduino::drive(const int16_t left_ticks_per_loop,
   return std::strcmp(serial_.readline().c_str(), "OK") == 0;
 }
 
+bool Arduino::drive_rpm(const float left_rpm, const float right_rpm) {
+  std::ostringstream oss{};
+
+  oss << "M " << left_rpm << ' ' << right_rpm << '\r';
+
+  serial_.write(oss.str());
+
+  return std::strcmp(serial_.readline().c_str(), "OK") == 0;
+}
+
 bool Arduino::connected() const { return serial_.isOpen(); }
 
 void Arduino::read_encoder_values(int64_t& left, int64_t& right) {

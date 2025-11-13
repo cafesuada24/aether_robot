@@ -170,13 +170,17 @@ hardware_interface::return_type DiffDriveArduino::write(
     return hardware_interface::return_type::ERROR;
   }
 
-  const int16_t left_ticks_per_loop{static_cast<int16_t>(l_wheel_.cmd / l_wheel_.rads_per_count /
-                                 cfg_.loop_rate_ms)};
-  const int16_t right_ticks_per_loop{static_cast<int16_t>(r_wheel_.cmd / r_wheel_.rads_per_count /
-                                  cfg_.loop_rate_ms)};
-
-  RCLCPP_DEBUG(logger_, "passing ticks per loop: %d %d", left_ticks_per_loop, right_ticks_per_loop);
-  arduino_.drive(left_ticks_per_loop, right_ticks_per_loop);
+  // const int16_t left_ticks_per_loop{static_cast<int16_t>(l_wheel_.cmd / l_wheel_.rads_per_count /
+  //                                cfg_.loop_rate_ms)};
+  // const int16_t right_ticks_per_loop{static_cast<int16_t>(r_wheel_.cmd / r_wheel_.rads_per_count /
+  //                                 cfg_.loop_rate_ms)};
+  //
+  // RCLCPP_DEBUG(logger_, "passing ticks per loop: %d %d", left_ticks_per_loop, right_ticks_per_loop);
+  // arduino_.drive(left_ticks_per_loop, right_ticks_per_loop);
+  //
+  const auto left_rpm {l_wheel_.cmd * 60.0 / (2 * M_PI)};
+  const auto right_rpm{r_wheel_.cmd * 60 / (2 * M_PI)};
+  arduino_.drive_rpm(left_rpm, right_rpm);
 
   return hardware_interface::return_type::OK;
 }

@@ -42,6 +42,8 @@ class Arduino {
 
   bool drive(const int16_t left_ticks_per_loop,
              const int16_t right_ticks_per_loop);
+
+  bool drive_rpm(const float left_rpm, const float right_rpm);
  private:
   static constexpr auto PID_RATE{30};
   static constexpr auto PID_INTERVAL{1000.0 / 30};
