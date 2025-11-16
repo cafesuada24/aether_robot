@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     sudo \
     vim \
-    make \
-    && rm -rf /var/lib/apt/lists/*
+    make
 
 # COPY config/ /site_config/
 COPY scripts/entrypoint.bash /entrypoint.bash
