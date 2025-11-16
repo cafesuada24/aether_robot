@@ -49,7 +49,9 @@ run_docker_cont:
 		aether-bot-armv8:latest
 
 new_docker_shell:
-	docker exec -it $(or $(cont_name), 'aether_bot_cont') bash
+	docker exec -it $(or $(cont_name), 'aether_bot_cont') \
+		-w /home/$(or $(USERNAME), $(DEFAULT_DOCKER_USER))/ros2_ws \
+		bash
 
 open_teleop:
 	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
