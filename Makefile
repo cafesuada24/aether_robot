@@ -48,8 +48,6 @@ run_docker_cont:
 		--device=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0:/dev/ttyUSB1 \
 		aether-bot-armv8:latest
 
-		# --device=/dev/ttyUSB0 \
-		# -v ~/ros_workspaces/articulated_bot:/ros2_ws
 new_docker_shell:
 	docker exec -it $(or $(cont_name), 'aether_bot_cont') bash
 
