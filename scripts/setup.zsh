@@ -26,6 +26,10 @@ fi
 echo "Sourcing ROS $ROS_DISTRO underlay environment..."
 source "/opt/ros/$ROS_DISTRO/setup.zsh" && echo 'Done.'
 
+if ! [[ -f ./install/setup.zsh ]]; then
+  make build
+fi
+
 if [[ -f ./install/setup.zsh ]]; then
     echo 'Sourcing workspace overlay environment...'
     source ./install/setup.zsh && echo "Done."
