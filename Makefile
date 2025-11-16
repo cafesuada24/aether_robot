@@ -32,7 +32,7 @@ build_docker_cont: Dockerfile
 
 run_docker_cont:
 	docker run -it --rm --name aether_bot_cont \
-		--user $(or $(DOCKER_UID), $(DEFAULT_DOCKER_UID)) \
+		--user $(or $(USER_UID), $(DEFAULT_DOCKER_UID)) \
 		--network=host \
 		--ipc=host \
 		--runtime=nvidia \
@@ -40,7 +40,7 @@ run_docker_cont:
 		--env="QT_X11_NO_MITSHM=1" \
 		--env="NVIDIA_DRIVER_CAPABILITIES=all" \
 		--env="NVIDIA_VISIBLE_DEVICES=all" \
-		-v ~/ros2_ws:/home/$(or $(DOCKER_USER), $(DEFAULT_DOCKER_USER))/ros2_ws \
+		-v ~/ros2_ws:/home/$(or $(USERNAME), $(DEFAULT_DOCKER_USER))/ros2_ws \
 		-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
 		-v ~/.Xauthority:/root/.Xauthority:ro \
 		--group-add video \
