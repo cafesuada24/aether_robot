@@ -1,0 +1,2 @@
+# source /home/$USER/ros2_ws/scripts/setup.bash
+source /opt/ros/jazzy/setup.bash
