@@ -7,7 +7,7 @@ PACKAGES_TO_BUILD := aether_gazebo aether_navigation aether_bringup aether_agent
 
 DEFAULT_DOCKER_USER := ubuntu
 DEFAULT_DOCKER_UID := $(shell id -u)
-DEAULT_DOCKER_GID := $(shell id -g)
+DEFAULT_DOCKER_GID := $(shell id -g)
 
 
 
