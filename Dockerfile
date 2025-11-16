@@ -14,22 +14,22 @@ RUN apt-get update && apt-get install -y \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
-COPY config/ /site_config/
+# COPY config/ /site_config/
 COPY scripts/entrypoint.bash /entrypoint.bash
 
-ARG USERNAME=ros
-ARG USER_UID=1001
+ARG USERNAME=ubuntu
+ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-RUN groupadd --gid $USER_GID $USERNAME \
-  && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
-  && mkdir /home/$USERNAME/.config && chown $USER_UID:$USER_GID /home/$USERNAME/.config \
+RUN groupadd --gid $USER_GID $USERNAME >&/dev/null || echo "Group already exists" \
+  && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME >&/dev/null || echo "User already exists" \
+  # && mkdir /home/$USERNAME/.config && chown $USER_UID:$USER_GID /home/$USERNAME/.config \
   && mkdir /home/$USERNAME/ros2_ws && chown $USER_UID:$USER_GID /home/$USERNAME/ros2_ws
 
 RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
   && chmod 0440 /etc/sudoers.d/$USERNAME
 
-USER ros
+USER $USERNAME
 
 COPY scripts/bashrc /home/$USERNAME/.bashrc
 
