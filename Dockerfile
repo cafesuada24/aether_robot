@@ -40,7 +40,7 @@ COPY scripts/setup.bash scripts/setup.bash
 # COPY ./requirements.txt ./
 # COPY ./venv ./venv
 
-RUN source scripts/setup.bash && \
+RUN /opt/ros/jazzy/setup.bash && \
     rosdep update --rosdistro jazzy && \
     rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y && \
     clean=True make build && \
