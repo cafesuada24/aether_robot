@@ -21,18 +21,18 @@ build:
 	([ "$(clean)" == 'True' ] && rm -rf build/ install/ log/ >&/dev/null); \
 	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 
-launch_sim:
-	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(use_sim_time), 'False')
-
-run_rviz:
-	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=$(or $(use_sim_time), 'False')
-
 build_docker_cont: Dockerfile
 	docker build --platform='linux/arm64/v8' \
 		--build-arg USERNAME=$(or $(USERNAME), $(DEFAULT_DOCKER_USER)) \
 		--build-arg USER_UID=$(or $(USER_UID), $(DEFAULT_DOCKER_UID)) \
 		--build-arg USER_GID=$(or $(USER_GID), $(DEFAULT_DOCKER_GID)) \
 		-t aether-bot-armv8 .
+
+run_sim:
+	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(use_sim_time), 'False')
+
+run_rviz:
+	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=$(or $(use_sim_time), 'False')
 
 run_docker_cont:
 	docker run -it --rm --name aether_bot_cont \
@@ -52,13 +52,14 @@ run_docker_cont:
 		--device=/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0:/dev/ttyUSB1 \
 		aether-bot-armv8:latest
 
+run_teleop_keyboard:
+	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
+		--ros-args -r /cmd_vel:=/key_cmd_vel\
+		-p stamped:=true -p use_sim_time:=$(or $(use_sim_time), 'False')\
+		-p repeat_rate:=10.0
+
 new_docker_shell:
 	docker exec -it $(or $(cont_name), 'aether_bot_cont') \
 		-w /home/$(or $(USERNAME), $(DEFAULT_DOCKER_USER))/ros2_ws \
 		bash
 
-open_teleop:
-	ros2 run teleop_twist_keyboard teleop_twist_keyboard\
-		--ros-args -r /cmd_vel:=/key_cmd_vel\
-		-p stamped:=true -p use_sim_time:=$(or $(use_sim_time), 'False')\
-		-p repeat_rate:=10.0
