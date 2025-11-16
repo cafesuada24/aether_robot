@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 # COPY config/ /site_config/
 COPY scripts/entrypoint.bash /entrypoint.bash
 
-ARG USERNAME=ubuntu
+ARG DEFAULT_UERNAME=ubuntu
+ARG USERNAME=$DEFAULT_USERNAME
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
