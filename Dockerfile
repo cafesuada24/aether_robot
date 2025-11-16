@@ -42,8 +42,9 @@ COPY scripts/setup.bash scripts/setup.bash
 
 RUN source /opt/ros/jazzy/setup.bash && \
     rosdep update --rosdistro jazzy && \
-    rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y && \
-    rm -rf /var/lib/apt/lists/*
+    rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y
+
+RUN sudo rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.bash"]
 
