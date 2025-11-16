@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     sudo \
     vim \
+    make \
     && rm -rf /var/lib/apt/lists/*
 
 # COPY config/ /site_config/
@@ -40,11 +41,11 @@ COPY scripts/setup.bash scripts/setup.bash
 # COPY ./requirements.txt ./
 # COPY ./venv ./venv
 
-# RUN source /opt/ros/jazzy/setup.bash && \
-#     rosdep update --rosdistro jazzy && \
-#     rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y && \
-#     colcon build --symlink-install object_tracker && \
-#     rm -rf /var/lib/apt/lists/*
+RUN source scripts/setup.bash && \
+    rosdep update --rosdistro jazzy && \
+    rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y && \
+    clean=True make build && \
+    rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.bash"]
 
