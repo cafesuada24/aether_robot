@@ -11,7 +11,11 @@ DEFAULT_DOCKER_GID := $(shell id -g)
 
 
 
-.PHONY: build build_clean launch_rsp launch_sim run_rviz
+.PHONY: run build build_clean launch_rsp launch_sim run_rviz
+
+run:
+	ros2 launch aether_bringup aether_bringup_launch.py \
+		slam:=$(or $slam, 'False') agent:=$(or $agent, 'True')
 
 build:
 	([ "$(clean)" == 'True' ] && rm -rf build/ install/ log/ >&/dev/null); \
