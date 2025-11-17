@@ -36,10 +36,11 @@ class DriverNode : public rclcpp::Node {
         get_parameter("baudrate").as_int(),
         get_parameter("serial_timeout_ms").as_int(),
         get_parameter("encoder_resolution").as_int(),
-        get_parameter("wheel_diameter_meter").as_double(),
+        get_parameter("wheel_diameter_meter").as_double()
         // get_parameter("gear_reduction").as_double(),
-        get_parameter("min_linear_speed_m_per_s").as_double(),
-        get_parameter("max_linear_speed_m_per_s").as_double());
+        // get_parameter("min_linear_speed_m_per_s").as_double(),
+        // get_parameter("max_linear_speed_m_per_s").as_double());
+      );
 
     RCLCPP_INFO(get_logger(), "Connected to ardunio");
   }

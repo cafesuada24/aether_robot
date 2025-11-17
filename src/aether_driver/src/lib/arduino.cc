@@ -8,32 +8,24 @@
 namespace aether_driver {
 
 using namespace std::string_literals;
-Arduino::Arduino(const std::string& serial, const uint16_t braud,
+Arduino::Arduino(const std::string& serial, const uint16_t baudrate,
                  const uint64_t timeout_ms, const uint16_t encoder_resolution,
-                 const float wheel_diameter_meter,
-                 const float min_linear_speed_m_per_s,
-                 const float max_linear_speed_m_per_s)
+                 const float wheel_diameter_meter)
 
 {
-  setup(serial, braud, timeout_ms, encoder_resolution, wheel_diameter_meter,
-        min_linear_speed_m_per_s, max_linear_speed_m_per_s);
+  setup(serial, baudrate, timeout_ms, encoder_resolution, wheel_diameter_meter);
 }
 
-void Arduino::setup(const std::string& serial, const uint16_t braud,
+void Arduino::setup(const std::string& serial, const uint16_t baudrate,
                     const uint64_t timeout_ms,
                     const uint16_t encoder_resolution,
-                    const float wheel_diameter_meter,
-                    const float min_linear_speed_m_per_s,
-                    const float max_linear_speed_m_per_s) {
+                    const float wheel_diameter_meter) {
   encoder_resolution_ = encoder_resolution;
   wheel_diameter_meter_ = wheel_diameter_meter;
-  // gear_reduction_{gear_reduction},
-  min_linear_speed_m_per_s_ = min_linear_speed_m_per_s;
-  max_linear_speed_m_per_s_ = max_linear_speed_m_per_s;
 
   auto timeout{aether_driver::Timeout::simpleTimeout(timeout_ms)};
   serial_.setPort(serial);
-  serial_.setBaudrate(braud);
+  serial_.setBaudrate(baudrate);
   serial_.setTimeout(timeout);
 }
 
@@ -67,15 +59,15 @@ int16_t Arduino::calc_ticks_per_loop(const float speed) const {
 }
 
 float Arduino::ensure_speed(const float speed) const {
-  float spd{0.0};
-  if (speed != 0.0) {
-    spd = std::clamp((speed < 0 ? -1 : 1) * speed, min_linear_speed_m_per_s_,
-                     max_linear_speed_m_per_s_);
-    if (speed < 0) {
-      spd *= -1;
-    }
-  }
-  return spd;
+  // float spd{0.0};
+  // if (speed != 0.0) {
+  //   spd = std::clamp((speed < 0 ? -1 : 1) * speed, min_linear_speed_m_per_s_,
+  //                    max_linear_speed_m_per_s_);
+  //   if (speed < 0) {
+  //     spd *= -1;
+  //   }
+  // }
+  return speed;
 };
 
 bool Arduino::drive_m_per_sec(const float left_speed, const float right_speed) {
@@ -162,8 +154,8 @@ void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
   right = std::atoll(token_2.c_str());
 };
 
-bool Arduino::set_pid_values(const uint16_t k_p, const uint16_t k_d, const uint16_t k_i,
-                             const uint16_t k_o) {
+bool Arduino::set_pid_values(const uint16_t k_p, const uint16_t k_d,
+                             const uint16_t k_i, const uint16_t k_o) {
   std::stringstream ss;
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
