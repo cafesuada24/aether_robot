@@ -145,10 +145,10 @@ void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
 
   const auto response{serial_.readline()};
 
-  const std::string delimiter{" "};
+  const char delimiter{' '};
   size_t del_pos{response.find(delimiter)};
   std::string token_1{response.substr(0, del_pos)};
-  std::string token_2{response.substr(del_pos + delimiter.length())};
+  std::string token_2{response.substr(del_pos + 1)};
 
   left = std::atoll(token_1.c_str());
   right = std::atoll(token_2.c_str());
@@ -156,11 +156,39 @@ void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
 
 bool Arduino::set_pid_values(const uint16_t k_p, const uint16_t k_d,
                              const uint16_t k_i, const uint16_t k_o) {
-  std::stringstream ss;
+  std::stringstream ss {};
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
   return std::strcmp(serial_.readline().c_str(), "OK") == 0;
 }
 
+bool Arduino::read_sensors(SensorsData& sensors_data) {
+  serial_.write("S\r"s);
+  const auto response{serial_.readline()};
+  const char delimiter{' '};
+  std::istringstream tokenStream(response); 
+  std::string token {};
+  std::vector<double> tokens {};
+  tokens.reserve(8);
+  while(std::getline(tokenStream, token, delimiter)) {
+    tokens.push_back(std::stod(token));
+  }
+  while (tokens.size() < 8) {
+    tokens.push_back(0);
+  }
+
+  sensors_data.left_enc = tokens[0];
+  sensors_data.right_enc = tokens[1];
+  sensors_data.imu.linear[0] = tokens[2];
+  sensors_data.imu.linear[1] = tokens[3];
+  sensors_data.imu.linear[2] = tokens[4];
+  sensors_data.imu.gyro[0] = tokens[5];
+  sensors_data.imu.gyro[1] = tokens[6];
+  sensors_data.imu.gyro[2] = tokens[7];
+
+  return true;
+};
+
 void Arduino::send_empty_message() { serial_.write("\r"); }
 }  // namespace aether_driver
+//

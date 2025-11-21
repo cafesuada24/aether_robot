@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 
+#include "aether_driver/sensors_data.h"
 #include "aether_driver/serial/serial.h"
 
 namespace aether_driver {
@@ -40,6 +41,8 @@ class Arduino {
              const int16_t right_ticks_per_loop);
 
   bool drive_rpm(const float left_rpm, const float right_rpm);
+
+  bool read_sensors(SensorsData& sensors_data);
 
  private:
   static constexpr auto PID_RATE{30};
