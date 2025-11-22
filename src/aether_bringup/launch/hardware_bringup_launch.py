@@ -20,10 +20,10 @@ def generate_launch_description() -> LaunchDescription:
         'params',
         'rplidar.yaml',
     )
-    driver_params_file = os.path.join(
+    ros_arduino_bridge_params_file = os.path.join(
         pkg_share,
         'params',
-        'driver.yaml',
+        'ros_arduino_bridge.yaml',
     )
 
     camera = Node(
@@ -40,14 +40,14 @@ def generate_launch_description() -> LaunchDescription:
         remappings=[('scan', 'lidar')],
     )
 
-    driver_node = Node(
+    ros_arduino_bridge = Node(
         package='aether_driver',
-        executable='driver_node',
-        parameters=[driver_params_file],
+        executable='ros_arduino_bridge',
+        parameters=[ros_arduino_bridge_params_file],
     )
 
     ld = LaunchDescription()
     ld.add_action(camera)
     ld.add_action(rplidar)
-    # ld.add_action(driver_node)
+    ld.add_action(ros_arduino_bridge)
     return ld
