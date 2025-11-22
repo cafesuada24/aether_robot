@@ -115,7 +115,7 @@ def generate_launch_description() -> LaunchDescription:
 
         actions=[
             # Remapping required to have a slam session subscribe & publish in optional namespaces
-            SetRemap(src='/scan', dst='lidar'),
+            SetRemap(src='/scan', dst='/sensor/lidar'),
             SetRemap(src='/tf', dst='tf'),
             SetRemap(src='/tf_static', dst='tf_static'),
             SetRemap(src='/map', dst='map'),
