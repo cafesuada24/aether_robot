@@ -12,6 +12,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(aether_interfaces REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_library(serial_lib SHARED
   src/lib/serial/serial.cc
@@ -34,14 +35,12 @@ target_include_directories(diffdrive_arduino
   PRIVATE
   include
 )
-target_link_libraries(diffdrive_arduino
-  arduino_lib
-)
 ament_target_dependencies(diffdrive_arduino
   rclcpp
   rclcpp_lifecycle
   hardware_interface
   pluginlib
+  aether_interfaces
 )
 pluginlib_export_plugin_description_file(hardware_interface robot_hardware.xml)
 
@@ -55,6 +54,17 @@ ament_target_dependencies(driver_node
   "aether_interfaces"
 )
 
+add_executable(ros_arduino_bridge src/nodes/ros_arduino_bridge.cpp)
+target_link_libraries(ros_arduino_bridge
+  arduino_lib
+)
+ament_target_dependencies(ros_arduino_bridge
+  "rclcpp"
+  "sensor_msgs"
+  "aether_interfaces"
+)
+
+
 install(TARGETS
   arduino_lib
   serial_lib
@@ -64,6 +74,7 @@ install(TARGETS
 
 install(TARGETS
   driver_node
+  ros_arduino_bridge
   DESTINATION lib/${PROJECT_NAME}
 )
 
