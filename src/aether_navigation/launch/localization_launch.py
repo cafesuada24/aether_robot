@@ -35,6 +35,7 @@ def generate_launch_description() -> LaunchDescription:
     """Localization launch description."""
     # Get the launch directory
     pkg_dir = get_package_share_directory(PKG_NAME)
+    ekf_config_path = os.path.join(pkg_dir, 'params', 'localization.yaml')
 
     namespace = LaunchConfiguration('namespace')
     map_yaml_file = LaunchConfiguration('map')
@@ -237,6 +238,15 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    ekf_node = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[ekf_config_path],
+    )
+
+
     # Create the launch description and populate
     ld = LaunchDescription()
 
@@ -257,5 +267,6 @@ def generate_launch_description() -> LaunchDescription:
     # Add the actions to launch all of the localiztion nodes
     ld.add_action(load_nodes)
     ld.add_action(load_composable_nodes)
+    ld.add_action(ekf_node)
 
     return ld
