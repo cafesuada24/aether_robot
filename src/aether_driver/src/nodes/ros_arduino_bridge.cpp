@@ -69,7 +69,7 @@ class ROSArduinoBridge : public rclcpp::Node {
       return;
     }
 
-    // arduino_.drive_rpm(left_motor_rpm_.load(), right_motor_rpm_.load());
+    arduino_.drive_rpm(left_motor_rpm_.load(), right_motor_rpm_.load());
 
     aether_driver::SensorsData data{};
     arduino_.read_sensors(data);
