@@ -1,7 +1,7 @@
 #include <aether_driver/arduino.h>
 
-#include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -131,7 +131,8 @@ bool Arduino::drive(const int16_t left_ticks_per_loop,
 bool Arduino::drive_rpm(const float left_rpm, const float right_rpm) {
   std::ostringstream oss{};
 
-  oss << "M " << left_rpm << ' ' << right_rpm << '\r';
+  oss << "M " << std::setprecision(1) << left_rpm << ' ' << std::setprecision(1)
+      << right_rpm << '\r';
 
   serial_.write(oss.str());
 
@@ -156,7 +157,7 @@ void Arduino::read_encoder_values(int64_t& left, int64_t& right) {
 
 bool Arduino::set_pid_values(const uint16_t k_p, const uint16_t k_d,
                              const uint16_t k_i, const uint16_t k_o) {
-  std::stringstream ss {};
+  std::stringstream ss{};
   ss << "u " << k_p << ":" << k_d << ":" << k_i << ":" << k_o << "\r";
   serial_.write(ss.str());
   return std::strcmp(serial_.readline().c_str(), "OK") == 0;
@@ -166,11 +167,11 @@ bool Arduino::read_sensors(SensorsData& sensors_data) {
   serial_.write("S\r"s);
   const auto response{serial_.readline()};
   const char delimiter{' '};
-  std::istringstream tokenStream(response); 
-  std::string token {};
-  std::vector<double> tokens {};
+  std::istringstream tokenStream(response);
+  std::string token{};
+  std::vector<double> tokens{};
   tokens.reserve(8);
-  while(std::getline(tokenStream, token, delimiter)) {
+  while (std::getline(tokenStream, token, delimiter)) {
     tokens.push_back(std::stod(token));
   }
   while (tokens.size() < 8) {
