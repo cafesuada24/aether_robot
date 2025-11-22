@@ -22,6 +22,8 @@ class ROSArduinoBridge : public rclcpp::Node {
             "/sensor/encoder", rclcpp::SensorDataQoS())} {
     declare_parameters();
 
+    imu_frame_ = get_parameter("imu_frame").as_string();
+
     rclcpp::QoS qos(1);
     qos.best_effort();
     qos.durability_volatile();
@@ -54,6 +56,7 @@ class ROSArduinoBridge : public rclcpp::Node {
       encoder_publisher_;
   // rclcpp::Subscription<aether_interfaces> vel_cmd_subscriber_;
 
+  std::string imu_frame_ {};
   std::atomic<double> left_motor_rpm_{0};
   std::atomic<double> right_motor_rpm_{0};
   rclcpp::Subscription<aether_interfaces::msg::MotorSpeed>::SharedPtr
@@ -75,6 +78,10 @@ class ROSArduinoBridge : public rclcpp::Node {
     arduino_.read_sensors(data);
 
     sensor_msgs::msg::Imu imu_data{};
+
+    imu_data.header.stamp = now();
+    imu_data.header.frame_id = imu_frame_;
+
     imu_data.angular_velocity.x = data.imu.gyro[0];
     imu_data.angular_velocity.y = data.imu.gyro[1];
     imu_data.angular_velocity.z = data.imu.gyro[2];
@@ -96,6 +103,7 @@ class ROSArduinoBridge : public rclcpp::Node {
     this->declare_parameter("serial_timeout_ms", 1000);
     this->declare_parameter("encoder_count_per_rev", 20);
     this->declare_parameter("wheel_diameter_meter", 0.065);
+    this->declare_parameter("imu_frame", "imu_link");
   }
 };
 
