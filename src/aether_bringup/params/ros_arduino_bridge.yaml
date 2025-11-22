@@ -1,9 +1,7 @@
-/driver:
+/ros_arduino_bridge:
   ros__parameters:
     serial_port: '/dev/ttyUSB0'
     baudrate: 57600
     serial_timeout_ms: 1000
-    encoder_resolution: 40
+    encoder_resolution: 20
     wheel_diameter_meter: 0.065
-    min_linear_speed_m_per_s: 0.3
-    max_linear_speed_m_per_s: 0.8
