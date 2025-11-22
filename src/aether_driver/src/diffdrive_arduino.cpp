@@ -3,6 +3,7 @@
 #include <chrono>
 #include <hardware_interface/hardware_component_interface.hpp>
 #include <hardware_interface/types/hardware_component_interface_params.hpp>
+#include <optional>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/state.hpp>
@@ -64,8 +65,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
           "/sensor/encoder", rclcpp::SensorDataQoS(),
           std::bind(&DiffDriveArduino::EncoderCallback, this,
                     std::placeholders::_1));
-  encoder_buffer_.initRT(aether_interfaces::msg::Encoder::SharedPtr());
-
+  // encoder_buffer_.initRT(aether_interfaces::msg::Encoder::SharedPtr());
 
   rclcpp::QoS qos(1);
   qos.best_effort();
@@ -75,7 +75,7 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_configure(
   motor_speed_publisher_ = std::make_unique<
       realtime_tools::RealtimePublisher<aether_interfaces::msg::MotorSpeed>>(
       node_ptr->create_publisher<aether_interfaces::msg::MotorSpeed>(
-          "arduino_command/rpm", qos));
+          "/arduino_command/rpm", qos));
 
   // arduino_.connect();
 
@@ -111,13 +111,11 @@ hardware_interface::CallbackReturn DiffDriveArduino::on_activate(
   // auto initial_value{aether_interfaces::msg::Encoder::SharedPtr()};
   // initial_value->left = 0;
   // initial_value->right = 0;
-  encoder_buffer_.initRT(aether_interfaces::msg::Encoder::SharedPtr());
   return CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn DiffDriveArduino::on_deactivate(
     [[maybe_unused]] const rclcpp_lifecycle::State& previous_state) {
-  encoder_buffer_.reset();
   // arduino_.close();
   // if (arduino_.connected()) {
   //   RCLCPP_WARN(
@@ -178,19 +176,14 @@ DiffDriveArduino::export_command_interfaces() {
 
 hardware_interface::return_type DiffDriveArduino::read(
     const rclcpp::Time&, const rclcpp::Duration& period) {
-  // if (!arduino_.connected()) {
-  //   return hardware_interface::return_type::ERROR;
+  // const auto current{encoder_data_.try_get<std::optional<aether_interfaces::msg::Encoder::SharedPtr>>()};
+  // if (!current.has_value()) {
+  //   return hardware_interface::return_type::OK;
   // }
+  // auto encoder_msg{current.value()->get()};
 
-  const auto encoder_msg{encoder_buffer_.readFromNonRT()};
-
-  if (nullptr == encoder_msg) {
-    return hardware_interface::return_type::OK;
-  }
-
-  // arduino_.read_encoder_values(l_wheel_.enc, r_wheel_.enc);
-  l_wheel_.enc = encoder_msg->get()->left;
-  r_wheel_.enc = encoder_msg->get()->right;
+  l_wheel_.enc = left_enc_.load();
+  r_wheel_.enc = right_enc_.load();
 
   const auto delta_seconds{period.seconds()};
   double pos_prev{l_wheel_.pos};
@@ -200,6 +193,28 @@ hardware_interface::return_type DiffDriveArduino::read(
   pos_prev = r_wheel_.pos;
   r_wheel_.pos = r_wheel_.calc_enc_angle();
   r_wheel_.vel = (r_wheel_.pos - pos_prev) / delta_seconds;
+
+  // try {
+  //   const auto encoder_msg{encoder_buffer_.readFromNonRT()};
+  //   // arduino_.read_encoder_values(l_wheel_.enc, r_wheel_.enc);
+  //   if (nullptr == encoder_msg) {
+  //     return hardware_interface::return_type::OK;
+  //   }
+  //   l_wheel_.enc = encoder_msg->get()->left;
+  //   r_wheel_.enc = encoder_msg->get()->right;
+  //
+  //   const auto delta_seconds{period.seconds()};
+  //   double pos_prev{l_wheel_.pos};
+  //   l_wheel_.pos = l_wheel_.calc_enc_angle();
+  //   l_wheel_.vel = (l_wheel_.pos - pos_prev) / delta_seconds;
+  //
+  //   pos_prev = r_wheel_.pos;
+  //   r_wheel_.pos = r_wheel_.calc_enc_angle();
+  //   r_wheel_.vel = (r_wheel_.pos - pos_prev) / delta_seconds;
+  // } catch (std::exception& e) {
+  //   RCLCPP_ERROR(get_logger(), "%s", e.what());
+  //   return hardware_interface::return_type::OK;
+  // }
 
   return hardware_interface::return_type::OK;
 }
@@ -237,7 +252,14 @@ hardware_interface::return_type DiffDriveArduino::write(
 
 void DiffDriveArduino::EncoderCallback(
     const aether_interfaces::msg::Encoder::SharedPtr msg) {
-  encoder_buffer_.writeFromNonRT(msg);
+  // encoder_buffer_.writeFromNonRT(msg);
+  left_enc_.store(msg->left);
+  right_enc_.store(msg->right);
+  // encoder_data_.try_set(
+  //     [msg](aether_interfaces::msg::Encoder::SharedPtr& value_to_update) {
+  //       // Update the internal shared_ptr with the new incoming message
+  //       value_to_update = msg;
+  //     });
 }
 }  // namespace aether_driver
 

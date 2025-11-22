@@ -16,7 +16,6 @@
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
-#include "realtime_tools/realtime_buffer.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 #include "wheel.h"
 
@@ -64,9 +63,8 @@ class DiffDriveArduino : public hardware_interface::SystemInterface {
 
   rclcpp::Subscription<aether_interfaces::msg::Encoder>::SharedPtr
       encoder_subscriber_{};
-  realtime_tools::RealtimeBuffer<
-      std::shared_ptr<aether_interfaces::msg::Encoder>>
-      encoder_buffer_ {};
+  std::atomic<float> left_enc_ {0.0};
+  std::atomic<float> right_enc_ {0.0};
   // aether_interfaces::msg::Encoder::ConstSharedPtr encoder_value_ {nullptr};
   void EncoderCallback(const aether_interfaces::msg::Encoder::SharedPtr msg);
 
