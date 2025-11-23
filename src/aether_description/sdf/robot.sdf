@@ -242,7 +242,7 @@
     <joint name='imu_joint' type='fixed'>
       <parent>base_link</parent>
       <child>imu_link</child>
-      <pose relative_to='base_link'></pose>
+      <pose relative_to='base_link'>${base_length/4 - 0.013} 0 ${-base_height/2 + 0.003} 0 0 0</pose>
     </joint>
 
     <link name='imu_link'>
