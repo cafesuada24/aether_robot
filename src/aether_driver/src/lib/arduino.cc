@@ -180,12 +180,12 @@ bool Arduino::read_sensors(SensorsData& sensors_data) {
 
   sensors_data.left_enc = tokens[0];
   sensors_data.right_enc = tokens[1];
-  sensors_data.imu.linear[0] = tokens[2];
-  sensors_data.imu.linear[1] = tokens[3];
-  sensors_data.imu.linear[2] = tokens[4];
-  sensors_data.imu.gyro[0] = tokens[5];
-  sensors_data.imu.gyro[1] = tokens[6];
-  sensors_data.imu.gyro[2] = tokens[7];
+  sensors_data.imu.linear[0] = tokens[2] * LINEAR_MUL;
+  sensors_data.imu.linear[1] = tokens[3] * LINEAR_MUL;
+  sensors_data.imu.linear[2] = tokens[4] * LINEAR_MUL;
+  sensors_data.imu.gyro[0] = tokens[5] * GYRO_MUL;
+  sensors_data.imu.gyro[1] = tokens[6] * GYRO_MUL;
+  sensors_data.imu.gyro[2] = tokens[7] * GYRO_MUL;
 
   return true;
 };
