@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <math.h>
 
 #include "aether_driver/sensors_data.h"
 #include "aether_driver/serial/serial.h"
@@ -47,6 +48,9 @@ class Arduino {
  private:
   static constexpr auto PID_RATE{30};
   static constexpr auto PID_INTERVAL{1000.0 / 30};
+
+  static constexpr double GYRO_MUL {M_PI / 180};
+  static constexpr double LINEAR_MUL {9.80665};
 
   Serial serial_{};
 
