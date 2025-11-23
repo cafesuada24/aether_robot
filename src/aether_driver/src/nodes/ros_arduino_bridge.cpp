@@ -42,6 +42,18 @@ class ROSArduinoBridge : public rclcpp::Node {
 
     arduino_.connect();
 
+    imu_data_.orientation_covariance[0] = get_parameter("orientation_covariance.x").as_double();
+    imu_data_.orientation_covariance[4] = get_parameter("orientation_covariance.y").as_double();
+    imu_data_.orientation_covariance[8] = get_parameter("orientation_covariance.z").as_double();
+
+    imu_data_.linear_acceleration_covariance[0] = get_parameter("linear_acceleration_covariance.x").as_double();
+    imu_data_.linear_acceleration_covariance[4] = get_parameter("linear_acceleration_covariance.y").as_double();
+    imu_data_.linear_acceleration_covariance[8] = get_parameter("linear_acceleration_covariance.z").as_double();
+
+    imu_data_.angular_velocity_covariance[0] = get_parameter("angular_velocity_covariance.x").as_double();
+    imu_data_.angular_velocity_covariance[4] = get_parameter("angular_velocity_covariance.y").as_double();
+    imu_data_.angular_velocity_covariance[8] = get_parameter("angular_velocity_covariance.z").as_double();
+
     if (!arduino_.connected()) {
       RCLCPP_WARN(get_logger(),
                   "Unable to connect to arduino, please check and try again.");
@@ -56,7 +68,7 @@ class ROSArduinoBridge : public rclcpp::Node {
       encoder_publisher_;
   // rclcpp::Subscription<aether_interfaces> vel_cmd_subscriber_;
 
-  std::string imu_frame_ {};
+  std::string imu_frame_{};
   std::atomic<double> left_motor_rpm_{0};
   std::atomic<double> right_motor_rpm_{0};
   rclcpp::Subscription<aether_interfaces::msg::MotorSpeed>::SharedPtr
@@ -67,6 +79,8 @@ class ROSArduinoBridge : public rclcpp::Node {
     right_motor_rpm_.store(msg->right);
   }
 
+  sensor_msgs::msg::Imu imu_data_{};
+  aether_interfaces::msg::Encoder enc_data_{};
   void TimerCallback() {
     if (!arduino_.connected()) {
       return;
@@ -77,24 +91,21 @@ class ROSArduinoBridge : public rclcpp::Node {
     aether_driver::SensorsData data{};
     arduino_.read_sensors(data);
 
-    sensor_msgs::msg::Imu imu_data{};
+    imu_data_.header.stamp = now();
+    imu_data_.header.frame_id = imu_frame_;
 
-    imu_data.header.stamp = now();
-    imu_data.header.frame_id = imu_frame_;
+    imu_data_.angular_velocity.x = data.imu.gyro[0];
+    imu_data_.angular_velocity.y = data.imu.gyro[1];
+    imu_data_.angular_velocity.z = data.imu.gyro[2];
+    imu_data_.linear_acceleration.x = data.imu.linear[0];
+    imu_data_.linear_acceleration.y = data.imu.linear[1];
+    imu_data_.linear_acceleration.z = data.imu.linear[2];
 
-    imu_data.angular_velocity.x = data.imu.gyro[0];
-    imu_data.angular_velocity.y = data.imu.gyro[1];
-    imu_data.angular_velocity.z = data.imu.gyro[2];
-    imu_data.linear_acceleration.x = data.imu.linear[0];
-    imu_data.linear_acceleration.y = data.imu.linear[1];
-    imu_data.linear_acceleration.z = data.imu.linear[2];
+    imu_publisher_->publish(imu_data_);
 
-    imu_publisher_->publish(imu_data);
-
-    aether_interfaces::msg::Encoder enc_data{};
-    enc_data.left = data.left_enc;
-    enc_data.right = data.right_enc;
-    encoder_publisher_->publish(enc_data);
+    enc_data_.left = data.left_enc;
+    enc_data_.right = data.right_enc;
+    encoder_publisher_->publish(enc_data_);
   }
 
   void declare_parameters() {
@@ -103,7 +114,22 @@ class ROSArduinoBridge : public rclcpp::Node {
     this->declare_parameter("serial_timeout_ms", 1000);
     this->declare_parameter("encoder_count_per_rev", 20);
     this->declare_parameter("wheel_diameter_meter", 0.065);
+
     this->declare_parameter("imu_frame", "imu_link");
+
+    // Covariance params
+    this->declare_parameter("orientation_covariance.x", 3.0e-4);
+    this->declare_parameter("orientation_covariance.y", 3.0e-4);
+    this->declare_parameter("orientation_covariance.z", 100.0);
+
+    this->declare_parameter("angular_velocity_covariance.x", 7.616e-7);
+    this->declare_parameter("angular_velocity_covariance.y", 7.616e-7);
+    this->declare_parameter("angular_velocity_covariance.z", 7.616e-7);
+
+    this->declare_parameter("linear_acceleration_covariance.x", 1.539e-3);
+    this->declare_parameter("linear_acceleration_covariance.y", 1.539e-3);
+    this->declare_parameter("linear_acceleration_covariance.z", 1.539e-3);
+
   }
 };
 
