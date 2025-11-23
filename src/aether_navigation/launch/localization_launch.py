@@ -244,8 +244,8 @@ def generate_launch_description() -> LaunchDescription:
         name='ekf_filter_node',
         output='screen',
         parameters=[ekf_config_path],
+        remappings=[('odometry/filtered', 'odom')],
     )
-
 
     # Create the launch description and populate
     ld = LaunchDescription()
