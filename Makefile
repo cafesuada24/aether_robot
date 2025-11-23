@@ -29,7 +29,7 @@ build_docker_cont: Dockerfile
 		-t aether-bot-armv8 .
 
 run_sim:
-	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(use_sim_time), 'False')
+	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(slam), 'False')
 
 run_rviz:
 	ros2 run rviz2 rviz2 -d src/aether_gazebo/rviz/view_bot.rviz --ros-args -p use_sim_time:=$(or $(use_sim_time), 'False')
