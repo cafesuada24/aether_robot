@@ -75,7 +75,6 @@ def generate_launch_description() -> LaunchDescription:
 
     aether_bringup_launch = GroupAction(
         [
-            SetRemap('/odom', '/wheel_controller/odom'),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     os.path.join(
