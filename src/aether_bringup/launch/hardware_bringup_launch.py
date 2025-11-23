@@ -37,7 +37,7 @@ def generate_launch_description() -> LaunchDescription:
         package='rplidar_ros',
         executable='rplidar_composition',
         parameters=[rplidar_params_file],
-        remappings=[('scan', 'lidar')],
+        remappings=[('/scan', '/sensor/lidar')],
     )
 
     ros_arduino_bridge = Node(
