@@ -3,4 +3,4 @@
     serial_port: '/dev/ttyUSB1'
     frame_id: 'lidar_link'
     angle_compensate: true
-    scan_mode: 'Standard'
+    inverted: false
