@@ -59,7 +59,5 @@ run_teleop_keyboard:
 		-p repeat_rate:=10.0
 
 new_docker_shell:
-	docker exec -it $(or $(cont_name), 'aether_bot_cont') \
-		-w /home/$(or $(USERNAME), $(DEFAULT_DOCKER_USER))/ros2_ws \
-		bash
+	docker exec -it $(or $(cont_name), 'aether_bot_cont') bash
 
