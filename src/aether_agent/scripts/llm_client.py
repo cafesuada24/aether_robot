@@ -11,6 +11,7 @@ from google import genai
 from mcp import ClientSession
 from rclpy.node import Node
 
+
 from aether_interfaces.srv import LLMPrompt
 
 load_dotenv()
@@ -95,12 +96,12 @@ class LLMClient(Node):
         user_prompt = cast('str', request.prompt)
         self.get_logger().info(f'Received prompt: {user_prompt}')
         future = asyncio.run_coroutine_threadsafe(
-            self.__process_query(user_prompt), self.__aio_event_loop
+            self.__process_query(user_prompt), self.__aio_event_loop,
         )
         try:
             response.response = future.result(timeout=60.0)
         except Exception as e:
-            self.get_logger().error(f'Error during query processing: {e}')
+            self.get_logger().error(f'Error during query processing: {str(e)}')
 
         return response
 
