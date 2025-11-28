@@ -15,7 +15,8 @@ def generate_launch_description() -> LaunchDescription:
     # pkg_share = get_package_share_directory(PKG_NAME)
     use_sim_time = LaunchConfiguration('use_sim_time')
 
-    foxglove_bridge_share_dir = get_package_share_directory('foxglove_bridge')
+    # foxglove_bridge_share_dir = get_package_share_directory('foxglove_bridge')
+    rosbridge_server_share_dir = get_package_share_directory('rosbridge_server')
 
     # websocket_node = Node(
     #     package='rosbridge_server',
@@ -25,15 +26,17 @@ def generate_launch_description() -> LaunchDescription:
     foxglove_bridge_launch = IncludeLaunchDescription(
         FrontendLaunchDescriptionSource(
             os.path.join(
-                foxglove_bridge_share_dir,
+                rosbridge_server_share_dir,
                 'launch',
-                'foxglove_bridge_launch.xml',
+                # 'foxglove_bridge_launch.xml',
+                'rosbridge_websocket_launch.xml'
             ),
         ),
         launch_arguments={
-            'port': '8765',
+            # 'port': '8765',
             'use_sim_time': use_sim_time,
-            'include_hidden': 'True',
+            'delay_between_messages': '0.0',
+            # 'include_hidden': 'True',
         }.items(),
     )
 
