@@ -17,11 +17,13 @@ from nav2_common.launch import ReplaceString, RewrittenYaml
 
 PKG_NAME = 'aether_navigation'
 
+
 def generate_launch_description() -> LaunchDescription:
     # Get the launch directory
 
     pkg_share_dir = get_package_share_directory(PKG_NAME)
     launch_dir = os.path.join(pkg_share_dir, 'launch')
+    ekf_config_path = os.path.join(pkg_share_dir, 'params', 'localization.yaml')
 
     # Create the launch configuration variables
     namespace = LaunchConfiguration('namespace')
@@ -202,6 +204,14 @@ def generate_launch_description() -> LaunchDescription:
                     'container_name': container_name,
                 }.items(),
             ),
+            Node(
+                package='robot_localization',
+                executable='ekf_node',
+                name='ekf_filter_node',
+                output='screen',
+                parameters=[ekf_config_path, {'use_sim_time': use_sim_time}],
+                remappings=[('odometry/filtered', 'odom')],
+            ),
         ],
     )
 
@@ -224,6 +234,7 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(declare_log_level_cmd)
     ld.add_action(declare_use_localization_cmd)
     ld.add_action(declare_container_name)
+    ld.add_action(ekf_node)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(bringup_cmd_group)
