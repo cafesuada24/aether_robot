@@ -15,7 +15,7 @@ DEFAULT_DOCKER_GID := $(shell id -g)
 
 run:
 	ros2 launch aether_bringup aether_bringup_launch.py \
-		slam:=$(or $slam, 'False') agent:=$(or $agent, 'True')
+		slam:=$(or $(slam), 'False') agent:=$(or $(agent), 'True')
 
 build:
 	([ "$(clean)" == 'True' ] && rm -rf build/ install/ log/ >&/dev/null); \
