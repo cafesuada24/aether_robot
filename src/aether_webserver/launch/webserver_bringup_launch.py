@@ -23,13 +23,13 @@ def generate_launch_description() -> LaunchDescription:
     #     executable='rosbridge_websocket',
     # )
 
-    foxglove_bridge_launch = IncludeLaunchDescription(
+    rosbridge_launch = IncludeLaunchDescription(
         FrontendLaunchDescriptionSource(
             os.path.join(
                 rosbridge_server_share_dir,
                 'launch',
                 # 'foxglove_bridge_launch.xml',
-                'rosbridge_websocket_launch.xml'
+                'rosbridge_websocket_launch.xml',
             ),
         ),
         launch_arguments={
@@ -52,7 +52,7 @@ def generate_launch_description() -> LaunchDescription:
     )
     ld = LaunchDescription()
 
-    ld.add_action(foxglove_bridge_launch)
+    ld.add_action(rosbridge_launch)
     ld.add_action(web_video_server)
     ld.add_action(service_advertiser_node)
 

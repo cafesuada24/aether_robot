@@ -6,11 +6,14 @@ from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDesc
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node, SetParameter, SetRemap
-from launch_ros.descriptions import ParameterFile
-from nav2_common.launch import HasNodeParams, RewrittenYaml
+from launch_ros.actions import LoadComposableNodes, Node, SetParameter, SetRemap
+from launch_ros.descriptions import ComposableNode, ParameterFile
+from nav2_common.launch import RewrittenYaml
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
 
 PKG_NAME = 'aether_navigation'
+
 
 def generate_launch_description() -> LaunchDescription:
     # Input parameters declaration
@@ -21,14 +24,18 @@ def generate_launch_description() -> LaunchDescription:
     autostart = LaunchConfiguration('autostart')
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+    use_composition = LaunchConfiguration('use_composition')
+    container_name = LaunchConfiguration('container_name')
 
     # Variables
     lifecycle_nodes = ['map_saver']
 
     # Getting directories and launch-files
-    pkg_share_dir = get_package_share_directory(PKG_NAME)
+    pkg_share_dir = FindPackageShare(PKG_NAME)
     # slam_toolbox_dir = get_package_share_directory('slam_toolbox')
-    slam_launch_file = os.path.join(pkg_share_dir, 'launch', 'slam_online_async_launch.py')
+    slam_launch_file = PathJoinSubstitution(
+        [pkg_share_dir, 'launch', 'slam_online_sync_launch.py'],
+    )
 
     # Create our own temporary YAML files that include substitutions
     configured_params = ParameterFile(
@@ -43,18 +50,24 @@ def generate_launch_description() -> LaunchDescription:
 
     # Declare the launch arguments
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace', default_value='', description='Top-level namespace',
+        'namespace',
+        default_value='',
+        description='Top-level namespace',
     )
 
     declare_slam_params_file_cmd = DeclareLaunchArgument(
         'slam_params_file',
-        default_value=os.path.join(pkg_share_dir, 'params', 'mapper_params_online_async.yaml'),
+        default_value=PathJoinSubstitution(
+            [pkg_share_dir, 'params', 'mapper_params_online_sync.yaml'],
+        ),
         description='Full path to the ROS2 parameters file to use for slam_toolbox node',
     )
 
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
-        default_value=os.path.join(pkg_share_dir, 'params', 'nav2_params.yaml'),
+        default_value=PathJoinSubstitution(
+            [pkg_share_dir, 'params', 'nav2_params.yaml'],
+        ),
         description='Full path to the ROS2 parameters file to use for nav2 nodes',
     )
 
@@ -77,7 +90,21 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     declare_log_level_cmd = DeclareLaunchArgument(
-        'log_level', default_value='info', description='log level',
+        'log_level',
+        default_value='info',
+        description='log level',
+    )
+
+    declare_use_composition_cmd = DeclareLaunchArgument(
+        'use_composition',
+        default_value='True',
+        description='Whether to use composed bringup',
+    )
+
+    declare_container_name = DeclareLaunchArgument(
+        'container_name',
+        default_value='lidar_pipeline_container',
+        description='container name',
     )
 
     # Nodes launching commands
@@ -112,25 +139,36 @@ def generate_launch_description() -> LaunchDescription:
     # )
 
     start_slam_toolbox_cmd = GroupAction(
-
         actions=[
             # Remapping required to have a slam session subscribe & publish in optional namespaces
             SetRemap(src='/scan', dst='/sensor/lidar'),
             SetRemap(src='/tf', dst='tf'),
             SetRemap(src='/tf_static', dst='tf_static'),
             SetRemap(src='/map', dst='map'),
-
             # IncludeLaunchDescription(
             #     PythonLaunchDescriptionSource(slam_launch_file),
             #     launch_arguments={'use_sim_time': use_sim_time}.items(),
             #     condition=UnlessCondition(has_slam_toolbox_params),
             # ),
-
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(slam_launch_file),
-                launch_arguments={'use_sim_time': use_sim_time,
-                                  'slam_params_file': slam_params_file}.items(),
-                # condition=IfCondition(has_slam_toolbox_params),
+                launch_arguments={
+                    'use_sim_time': use_sim_time,
+                    'slam_params_file': slam_params_file,
+                }.items(),
+                condition=UnlessCondition(use_composition),
+            ),
+            LoadComposableNodes(
+                condition=IfCondition(use_composition),
+                target_container=container_name,
+                composable_node_descriptions=[
+                    ComposableNode(
+                        package='slam_toolbox',
+                        plugin='slam_toolbox::SynchronousSlamToolbox',
+                        name='slam_toolbox',
+                        parameters=[slam_params_file, {'use_sim_time': use_sim_time}],
+                    ),
+                ],
             ),
         ],
     )
@@ -145,6 +183,8 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
+    ld.add_action(declare_use_composition_cmd)
+    ld.add_action(declare_container_name)
 
     # Running Map Saver Server
     ld.add_action(start_map_server)

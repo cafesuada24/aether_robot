@@ -12,7 +12,6 @@
 
   <depend>geometry_msgs</depend>
 
-  <exec_depend>v4l2_camera</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>twist_mux</exec_depend>
@@ -23,7 +22,9 @@
   <exec_depend>aether_description</exec_depend>
   <exec_depend>aether_driver</exec_depend>
   <exec_depend>aether_webserver</exec_depend>
+  <exec_depend>aether_agent</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
+  <exec_depend>v4l2_camera</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>

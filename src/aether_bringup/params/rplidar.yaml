@@ -4,3 +4,6 @@
     frame_id: 'lidar_link'
     angle_compensate: true
     inverted: false
+    scan_mode: 'Standard'
+    topic_name: '/sensor/lidar'
+    scan_frequency: 5.5
