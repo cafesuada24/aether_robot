@@ -3,8 +3,9 @@ from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import LoadComposableNodes, Node
-from launch_ros.descriptions import ComposableNode
+from launch_ros.descriptions import ComposableNode, ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from nav2_common.launch import RewrittenYaml
 
 PKG_NAME = 'aether_bringup'
 
@@ -14,12 +15,20 @@ def generate_launch_description() -> LaunchDescription:
 
     container_name = LaunchConfiguration('container_name')
     use_composition = LaunchConfiguration('use_composition')
-    rplidar_config_path = PathJoinSubstitution([pkg_share_dir, 'params', 'ekf.yaml'])
 
     rplidar_params_file = PathJoinSubstitution(
         [pkg_share_dir, 'params', 'rplidar.yaml'],
     )
 
+    configured_params = ParameterFile(
+        RewrittenYaml(
+            source_file=rplidar_params_file,
+            root_key='',
+            param_rewrites={},
+            convert_types=True,
+        ),
+        allow_substs=True,
+    )
     declare_use_composition_cmd = DeclareLaunchArgument(
         'use_composition',
         default_value='True',
@@ -39,7 +48,7 @@ def generate_launch_description() -> LaunchDescription:
         executable='rplidar_composition',
         name='rplidar_node',
         output='screen',
-        parameters=[rplidar_config_path],
+        parameters=[rplidar_params_file],
     )
 
     load_composable_lidar = LoadComposableNodes(
@@ -49,7 +58,8 @@ def generate_launch_description() -> LaunchDescription:
             ComposableNode(
                 package='rplidar_ros',
                 plugin='rplidar_ros::rplidar_node',
-                parameters=[rplidar_params_file],
+                name='rplidar_node',
+                parameters=[configured_params],
                 extra_arguments=[{'use_intra_process_comms': True}],
             ),
         ],
