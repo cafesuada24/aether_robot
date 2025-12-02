@@ -13,6 +13,8 @@ wheel_controller:
   ros__parameters:
     publish_rate: 50.0
 
+    enable_odom_tf: false
+
     left_wheel_names: ['wheel_front_left_joint']
     right_wheel_names: ['wheel_front_right_joint']
 
