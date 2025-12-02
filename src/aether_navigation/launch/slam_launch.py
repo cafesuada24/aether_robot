@@ -1,16 +1,27 @@
-import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    EmitEvent,
+    GroupAction,
+    IncludeLaunchDescription,
+    LogInfo,
+    RegisterEventHandler,
+)
 from launch.conditions import IfCondition, UnlessCondition
+from launch.events import matches_action
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import (
+    AndSubstitution,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.actions import LoadComposableNodes, Node, SetParameter, SetRemap
 from launch_ros.descriptions import ComposableNode, ParameterFile
-from nav2_common.launch import RewrittenYaml
+from launch_ros.event_handlers import OnStateTransition
+from launch_ros.events.lifecycle import ChangeState, matches_node_name
 from launch_ros.substitutions import FindPackageShare
-from launch.substitutions import PathJoinSubstitution
+from lifecycle_msgs.msg import Transition
+from nav2_common.launch import RewrittenYaml
 
 PKG_NAME = 'aether_navigation'
 
@@ -28,19 +39,19 @@ def generate_launch_description() -> LaunchDescription:
     container_name = LaunchConfiguration('container_name')
 
     # Variables
-    lifecycle_nodes = ['map_saver']
+    lifecycle_nodes = ['map_saver', 'slam_toolbox']
 
     # Getting directories and launch-files
     pkg_share_dir = FindPackageShare(PKG_NAME)
-    # slam_toolbox_dir = get_package_share_directory('slam_toolbox')
+    slam_toolbox_dir = FindPackageShare('slam_toolbox')
     slam_launch_file = PathJoinSubstitution(
-        [pkg_share_dir, 'launch', 'slam_online_sync_launch.py'],
+        [slam_toolbox_dir, 'launch', 'slam_online_sync_launch.py'],
     )
 
     # Create our own temporary YAML files that include substitutions
     configured_params = ParameterFile(
         RewrittenYaml(
-            source_file=params_file,
+            source_file=slam_params_file,
             root_key=namespace,
             param_rewrites={},
             convert_types=True,
@@ -138,10 +149,20 @@ def generate_launch_description() -> LaunchDescription:
     #     source_file=params_file, node_name='slam_toolbox',
     # )
 
+    configured_params = ParameterFile(
+        RewrittenYaml(
+            source_file=slam_params_file,
+            root_key=namespace,
+            param_rewrites={'autostart': autostart},
+            convert_types=True,
+        ),
+        allow_substs=True,
+    )
+
     start_slam_toolbox_cmd = GroupAction(
         actions=[
             # Remapping required to have a slam session subscribe & publish in optional namespaces
-            SetRemap(src='/scan', dst='/sensor/lidar'),
+            SetRemap(src='/sensor/lidar', dst='sensor/lidar'),
             SetRemap(src='/tf', dst='tf'),
             SetRemap(src='/tf_static', dst='tf_static'),
             SetRemap(src='/map', dst='map'),
@@ -160,13 +181,19 @@ def generate_launch_description() -> LaunchDescription:
             ),
             LoadComposableNodes(
                 condition=IfCondition(use_composition),
-                target_container=container_name,
+                target_container=[namespace, '/', container_name],
                 composable_node_descriptions=[
                     ComposableNode(
                         package='slam_toolbox',
                         plugin='slam_toolbox::SynchronousSlamToolbox',
                         name='slam_toolbox',
-                        parameters=[slam_params_file, {'use_sim_time': use_sim_time}],
+                        parameters=[
+                            configured_params,
+                            {'use_lifecycle_manager': True},
+                            {'use_sim_time': use_sim_time},
+                        ],
+                        remappings=[('/sensor/lidar', '/sensor/lidar')],
+                        extra_arguments=[{'use_intra_process_comms': True}],
                     ),
                 ],
             ),

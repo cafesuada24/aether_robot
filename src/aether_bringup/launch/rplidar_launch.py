@@ -50,6 +50,7 @@ def generate_launch_description() -> LaunchDescription:
                 package='rplidar_ros',
                 plugin='rplidar_ros::rplidar_node',
                 parameters=[rplidar_params_file],
+                extra_arguments=[{'use_intra_process_comms': True}],
             ),
         ],
     )

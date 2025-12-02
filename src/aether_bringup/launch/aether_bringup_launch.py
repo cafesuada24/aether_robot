@@ -166,6 +166,7 @@ def generate_launch_description() -> LaunchDescription:
 
     # LiDAR/Hardware Component Container (Crucial for IPC optimization)
     # Using Multi-Threaded Executor for concurrency benefits
+
     lidar_pipeline_container = Node(
         package='rclcpp_components',
         executable='component_container_mt',
@@ -173,6 +174,7 @@ def generate_launch_description() -> LaunchDescription:
         namespace='',
         output='screen',
         parameters=[{'use_sim_time': sim_mode}],
+        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')],
     )
 
     # Hardware Drivers Group (Only run if NOT in simulation mode)

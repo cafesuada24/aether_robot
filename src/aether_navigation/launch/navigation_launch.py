@@ -62,7 +62,6 @@ def generate_launch_description() -> LaunchDescription:
     remappings = [
         ('/tf', 'tf'),
         ('/tf_static', 'tf_static'),
-        ('/cmd_vel', 'nav_cmd_vel'),
     ]
 
     # Create our own temporary YAML files that include substitutions
@@ -138,7 +137,7 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                remappings=remappings,
             ),
             Node(
                 package='nav2_smoother',
@@ -171,7 +170,7 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                remappings=remappings,
             ),
             Node(
                 package='nav2_bt_navigator',
@@ -204,7 +203,7 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                remappings=remappings,
             ),
             Node(
                 package='nav2_collision_monitor',
@@ -251,7 +250,7 @@ def generate_launch_description() -> LaunchDescription:
                         plugin='nav2_controller::ControllerServer',
                         name='controller_server',
                         parameters=[configured_params],
-                        remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                        remappings=remappings,
                     ),
                     ComposableNode(
                         package='nav2_smoother',
@@ -272,7 +271,7 @@ def generate_launch_description() -> LaunchDescription:
                         plugin='behavior_server::BehaviorServer',
                         name='behavior_server',
                         parameters=[configured_params],
-                        remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                        remappings=remappings,
                     ),
                     ComposableNode(
                         package='nav2_bt_navigator',
@@ -293,7 +292,7 @@ def generate_launch_description() -> LaunchDescription:
                         plugin='nav2_velocity_smoother::VelocitySmoother',
                         name='velocity_smoother',
                         parameters=[configured_params],
-                        remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
+                        remappings=remappings,
                     ),
                     ComposableNode(
                         package='nav2_collision_monitor',
@@ -314,7 +313,7 @@ def generate_launch_description() -> LaunchDescription:
                         plugin='nav2_lifecycle_manager::LifecycleManager',
                         name='lifecycle_manager_navigation',
                         parameters=[
-                            {'autostart': autostart, 'node_names': lifecycle_nodes}
+                            {'autostart': autostart, 'node_names': lifecycle_nodes},
                         ],
                     ),
                 ],

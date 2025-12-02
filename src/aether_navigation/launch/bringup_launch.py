@@ -47,7 +47,10 @@ def generate_launch_description() -> LaunchDescription:
     # https://github.com/ros/robot_state_publisher/pull/30
     # TODO(orduno) Substitute with `PushNodeRemapping`
     #              https://github.com/ros2/launch_ros/issues/56
-    remappings = [('/tf', 'tf'), ('/tf_static', 'tf_static')]
+    remappings = [
+        ('/tf', 'tf'),
+        ('/tf_static', 'tf_static'),
+    ]
 
     # Only it applys when `use_namespace` is True.
     # '<robot_namespace>' keyword shall be replaced by 'namespace' launch argument
@@ -111,7 +114,9 @@ def generate_launch_description() -> LaunchDescription:
 
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
-        default_value=PathJoinSubstitution([pkg_share_dir, 'params', 'nav2_params.yaml']),
+        default_value=PathJoinSubstitution(
+            [pkg_share_dir, 'params', 'nav2_params.yaml']
+        ),
         description='Full path to the ROS2 parameters file to use for all launched nodes',
     )
 
@@ -148,7 +153,7 @@ def generate_launch_description() -> LaunchDescription:
     declare_slam_container_name_cmd = DeclareLaunchArgument(
         'slam_container_name',
         default_value='lidar_pipeline_container',
-        description='container name',
+        description='slam container name',
     )
 
     # Specify the actions
@@ -164,6 +169,20 @@ def generate_launch_description() -> LaunchDescription:
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings,
                 output='screen',
+            ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([launch_dir, 'navigation_launch.py']),
+                ),
+                launch_arguments={
+                    'namespace': namespace,
+                    'use_sim_time': use_sim_time,
+                    'autostart': autostart,
+                    'params_file': params_file,
+                    'use_composition': use_composition,
+                    'use_respawn': use_respawn,
+                    'container_name': container_name,
+                }.items(),
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
@@ -192,20 +211,6 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={
                     'namespace': namespace,
                     'map': map_yaml_file,
-                    'use_sim_time': use_sim_time,
-                    'autostart': autostart,
-                    'params_file': params_file,
-                    'use_composition': use_composition,
-                    'use_respawn': use_respawn,
-                    'container_name': container_name,
-                }.items(),
-            ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([launch_dir, 'navigation_launch.py']),
-                ),
-                launch_arguments={
-                    'namespace': namespace,
                     'use_sim_time': use_sim_time,
                     'autostart': autostart,
                     'params_file': params_file,
