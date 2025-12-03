@@ -7,13 +7,35 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(nav2_common REQUIRED)
-find_package(nav2_bringup REQUIRED)
-find_package(nav2_map_server REQUIRED)
-find_package(nav2_lifecycle_manager REQUIRED)
-find_package(nav2_amcl REQUIRED)
-find_package(rclcpp_components REQUIRED)
-find_package(robot_localization REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(aether_interfaces REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+
+include_directories(include)
+
+add_library(mode_manager src/mode_manager.cpp)
+ament_target_dependencies(mode_manager
+  rclcpp
+  aether_interfaces
+  lifecycle_msgs
+)
+add_executable(mode_manager_node src/mode_manager_node.cpp)
+target_link_libraries(mode_manager_node mode_manager)
+ament_target_dependencies(mode_manager_node
+  rclcpp
+)
+
+
+install(TARGETS mode_manager_node
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY params launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -26,10 +48,5 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
-install(
-  DIRECTORY params launch
-  DESTINATION share/${PROJECT_NAME}
-)
 
 ament_package()
