@@ -15,7 +15,8 @@ from launch_ros.substitutions import FindPackageShare
 
 # --- Configuration Constants (Best Practice: Use consistent, readable names) ---
 PKG_NAME = 'aether_bringup'
-LIDAR_CONTAINER_NAME = 'lidar_pipeline_container'
+NAV2_CONTAINER_NAME = 'nav2_container'
+LAM_CONTAINER_NAME = 'lam_container'
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -95,6 +96,7 @@ def generate_launch_description() -> LaunchDescription:
     map_yaml = LaunchConfiguration('map')
     webserver = LaunchConfiguration('webserver')
     agent = LaunchConfiguration('agent')
+    use_composition = LaunchConfiguration('use_composition')
 
     # --- 4. Declare Launch Arguments (Using PathJoinSubstitution for defaults) ---
     declare_model_path_cmd = DeclareLaunchArgument(
@@ -138,6 +140,13 @@ def generate_launch_description() -> LaunchDescription:
         choices=['True', 'False'],
     )
 
+    declare_use_composition_cmd = DeclareLaunchArgument(
+        'use_composition',
+        default_value='True',
+        description='Whether to use composed bringup',
+        choices=['True', 'False'],
+    )
+
     # --- 5. Nodes and Actions ---
 
     # Twist Mux Node (Manages multiple velocity commands)
@@ -167,16 +176,6 @@ def generate_launch_description() -> LaunchDescription:
     # LiDAR/Hardware Component Container (Crucial for IPC optimization)
     # Using Multi-Threaded Executor for concurrency benefits
 
-    lidar_pipeline_container = Node(
-        package='rclcpp_components',
-        executable='component_container_mt',
-        name=LIDAR_CONTAINER_NAME,
-        namespace='',
-        output='screen',
-        parameters=[{'use_sim_time': sim_mode}],
-        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')],
-    )
-
     # Hardware Drivers Group (Only run if NOT in simulation mode)
     hardware_group = GroupAction(
         condition=UnlessCondition(sim_mode),
@@ -205,8 +204,8 @@ def generate_launch_description() -> LaunchDescription:
                     PathJoinSubstitution([pkg_share, 'launch', 'rplidar_launch.py']),
                 ),
                 launch_arguments=[
-                    ('use_composition', 'True'),
-                    ('container_name', LIDAR_CONTAINER_NAME),
+                    ('use_composition', use_composition),
+                    ('container_name', LAM_CONTAINER_NAME),
                 ],
             ),
         ],
@@ -227,13 +226,13 @@ def generate_launch_description() -> LaunchDescription:
         PythonLaunchDescriptionSource(nav_bringup_launch_file),
         launch_arguments=[
             ('use_sim_time', sim_mode),
-            ('slam', slam),
+            # ('slam', slam),
             ('use_localization', use_localization),
-            ('map', map_yaml),
-            ('use_composition', 'True'),
-            ('container_name', 'aether_nav_container'),
+            # ('map', map_yaml),
+            ('use_composition', use_composition),
+            ('nav_container_name', NAV2_CONTAINER_NAME),
             # IMPORTANT: Passing the LiDAR container name so SLAM/Mapper can share IPC with the LiDAR driver
-            ('slam_container_name', LIDAR_CONTAINER_NAME),
+            ('lam_container_name', LAM_CONTAINER_NAME),
         ],
     )
 
@@ -328,6 +327,7 @@ def generate_launch_description() -> LaunchDescription:
             declare_use_localization_cmd,
             declare_webserver_cmd,
             declare_agent_cmd,
+            declare_use_composition_cmd,
             # Core Robot State & Control
             robot_state_publisher_node,
             delayed_controller_manager_spawner,
@@ -337,7 +337,6 @@ def generate_launch_description() -> LaunchDescription:
             twist_mux_node,
             teleop_twist_joy,
             # Sensor/Hardware Composition Setup
-            lidar_pipeline_container,
             hardware_group,
             # Core Systems
             robot_localization_node,

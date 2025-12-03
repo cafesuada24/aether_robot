@@ -78,11 +78,14 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
-        'RCUTILS_LOGGING_BUFFERED_STREAM', '1'
+        'RCUTILS_LOGGING_BUFFERED_STREAM',
+        '1',
     )
 
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace', default_value='', description='Top-level namespace'
+        'namespace',
+        default_value='',
+        description='Top-level namespace',
     )
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -122,7 +125,9 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     declare_log_level_cmd = DeclareLaunchArgument(
-        'log_level', default_value='info', description='log level'
+        'log_level',
+        default_value='info',
+        description='log level',
     )
 
     load_nodes = GroupAction(
@@ -228,16 +233,28 @@ def generate_launch_description() -> LaunchDescription:
                 remappings=remappings,
             ),
             Node(
-                package='nav2_lifecycle_manager',
-                executable='lifecycle_manager',
-                name='lifecycle_manager_navigation',
+                package='nav2_map_server',
+                executable='map_server',
+                name='map_server',
                 output='screen',
+                respawn=use_respawn,
+                respawn_delay=2.0,
+                parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
-                parameters=[{'autostart': autostart}, {'node_names': lifecycle_nodes}],
+                remappings=remappings,
             ),
         ],
     )
 
+    load_lifecycle_node = Node(
+        condition=IfCondition(use_composition),
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_navigation',
+        output='screen',
+        arguments=['--ros-args', '--log-level', log_level],
+        parameters=[{'autostart': autostart}, {'node_names': lifecycle_nodes}],
+    )
     load_composable_nodes = GroupAction(
         condition=IfCondition(use_composition),
         actions=[
@@ -308,13 +325,20 @@ def generate_launch_description() -> LaunchDescription:
                         parameters=[configured_params],
                         remappings=remappings,
                     ),
+                    # ComposableNode(
+                    #     package='nav2_lifecycle_manager',
+                    #     plugin='nav2_lifecycle_manager::LifecycleManager',
+                    #     name='lifecycle_manager_navigation',
+                    #     parameters=[
+                    #         {'autostart': autostart, 'node_names': lifecycle_nodes},
+                    #     ],
+                    # ),
                     ComposableNode(
-                        package='nav2_lifecycle_manager',
-                        plugin='nav2_lifecycle_manager::LifecycleManager',
-                        name='lifecycle_manager_navigation',
-                        parameters=[
-                            {'autostart': autostart, 'node_names': lifecycle_nodes},
-                        ],
+                        package='nav2_map_server',
+                        plugin='nav2_map_server::MapServer',
+                        name='map_server',
+                        parameters=[configured_params, {'yaml_filename': ''}],
+                        remappings=remappings,
                     ),
                 ],
             ),
@@ -337,6 +361,7 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
     # Add the actions to launch all of the navigation nodes
+    ld.add_action(load_lifecycle_node)
     ld.add_action(load_nodes)
     ld.add_action(load_composable_nodes)
 
