@@ -44,6 +44,8 @@ RUN source /opt/ros/jazzy/setup.bash && \
     rosdep update --rosdistro jazzy && \
     rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y
 
+RUN apt-get install -y ros-jazzy-rmw-cyclonedds-cpp
+
 RUN sudo rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.bash"]
