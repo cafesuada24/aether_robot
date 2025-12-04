@@ -57,8 +57,6 @@ def generate_launch_description() -> LaunchDescription:
         [slam_toolbox_dir, 'launch', 'slam_online_sync_launch.py'],
     )
 
-    # lifecycle_nodes = ['map_server', 'amcl', 'slam_toolbox']
-
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
     # https://github.com/ros/geometry2/issues/32
@@ -215,7 +213,9 @@ def generate_launch_description() -> LaunchDescription:
     # currently only work on the LoadComposableNodes commands and not on the
     # ComposableNode node function itself
 
-    slam_lifecycle_nodes = ['slam_toolbox']
+
+
+    slam_lifecycle_nodes = ['slam_toolbox', 'map_saver']
     amcl_lifecycle_nodes = ['map_server', 'amcl']
 
     load_composable_nodes = GroupAction(
@@ -228,7 +228,7 @@ def generate_launch_description() -> LaunchDescription:
                 name='lifecycle_manager_slam',
                 output='screen',
                 arguments=['--ros-args', '--log-level', log_level],
-                parameters=[{'autostart': autostart}, {'node_names': slam_lifecycle_nodes}],
+                parameters=[{'autostart': False}, {'node_names': slam_lifecycle_nodes}],
             ),
             Node(
                 package='nav2_lifecycle_manager',
@@ -280,8 +280,6 @@ def generate_launch_description() -> LaunchDescription:
                         name='amcl',
                         parameters=[
                             configured_params,
-                            # {'autostart': False},
-                            # {'use_lifecycle_manager': True},
                         ],
                         remappings=remappings,
                         extra_arguments=[{'use_intra_process_comms': True}],
@@ -305,12 +303,17 @@ def generate_launch_description() -> LaunchDescription:
                         name='slam_toolbox',
                         parameters=[
                             configured_params,
-                            # {'autostart': autostart},
-                            # {'use_lifecycle_manager': True},
                         ],
                         extra_arguments=[{'use_intra_process_comms': True}],
                     ),
                 ],
+            ),
+            Node(
+                package=PKG_NAME,
+                executable='mode_manager_node',
+                name='mode_manager',
+                output='screen',
+                arguments=['--ros-args', '--log-level', log_level],
             ),
         ],
     )

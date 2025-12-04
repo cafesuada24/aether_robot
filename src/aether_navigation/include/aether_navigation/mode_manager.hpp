@@ -68,6 +68,8 @@ class ModeManager : public rclcpp::Node {
   bool deactivate_localization_();
   rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr
       localization_srv_client_;
+  rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr
+      map_server_srv_client_;
 
   bool handling_request_ {false};
   inline bool call_lifecycle_transition_(

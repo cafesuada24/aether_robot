@@ -55,7 +55,7 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
       [this](const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
         auto execute_in_thread{
             [this, goal_handle]() { return this->change_state_(goal_handle); }};
-            std::thread{execute_in_thread}.detach();
+        std::thread{execute_in_thread}.detach();
       }};
 
   this->change_mode_server_ = rclcpp_action::create_server<ChangeRobotMode>(
@@ -64,24 +64,18 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
 
   // #############################################################
 
-  // Mapping service clients
+  // ###########################Mapping services##################
   this->mapping_srv_client_ =
       this->create_srv_client<lifecycle_msgs::srv::ChangeState>(
           this->get_parameter("mapping_service_name").as_string());
-
   if (!this->mapping_srv_client_) {
     throw std::runtime_error(
         "FATAL: Failed to initialize Mapping service client.");
   }
-  std::thread{[this]() {
-    return call_lifecycle_transition_(
-        mapping_srv_client_,
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
-  }}.detach();
 
-  // update_mode(MAPPING_MODE);
+  // #############################################################
 
-  // Localization service clients
+  // #####################Localization services###################
   this->localization_srv_client_ =
       this->create_srv_client<lifecycle_msgs::srv::ChangeState>(
           this->get_parameter("localization_service_name").as_string());
@@ -90,14 +84,35 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
     throw std::runtime_error(
         "FATAL: Failed to initialize Localization service client.");
   }
+
+  this->map_server_srv_client_ =
+      this->create_srv_client<lifecycle_msgs::srv::ChangeState>(
+          this->get_parameter("map_server_service_name").as_string());
+
+  if (!this->map_server_srv_client_) {
+    throw std::runtime_error(
+        "FATAL: Failed to initialize Map server service client.");
+  }
+  // #############################################################
+
+  // Some node need initial configure state
+  std::thread{[this]() {
+    return call_lifecycle_transition_(
+        mapping_srv_client_,
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  }}.detach();
 }
 
 ModeManager::~ModeManager() {}
 
 void ModeManager::declare_parameters() {
   this->declare_parameter("update_topic", "/robot_mode/status_update");
+
   this->declare_parameter("mapping_service_name", "/slam_toolbox/change_state");
+
   this->declare_parameter("localization_service_name", "/amcl/change_state");
+  this->declare_parameter("map_server_service_name",
+                          "/map_server/change_state");
 }
 
 void ModeManager::change_state_(
@@ -199,6 +214,10 @@ bool ModeManager::deactivate_mapping_() {
 
 bool ModeManager::activate_localization_() {
   if (!call_lifecycle_transition_(
+          map_server_srv_client_,
+          lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+          "Map Server") ||
+      !call_lifecycle_transition_(
           localization_srv_client_,
           lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
           "Localization")) {
@@ -206,21 +225,35 @@ bool ModeManager::activate_localization_() {
   }
 
   return call_lifecycle_transition_(
-      localization_srv_client_,
-      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE, "Localization");
+             map_server_srv_client_,
+             lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+             "Map Server") &&
+         call_lifecycle_transition_(
+             localization_srv_client_,
+             lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+             "Localization");
 }
 
 bool ModeManager::deactivate_localization_() {
   if (!call_lifecycle_transition_(
           localization_srv_client_,
           lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE,
-          "Localization")) {
+          "Localization") ||
+      !call_lifecycle_transition_(
+          map_server_srv_client_,
+          lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE,
+          "Map Server")) {
     return false;
   }
 
   return call_lifecycle_transition_(
-      localization_srv_client_,
-      lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP, "Localization");
+             localization_srv_client_,
+             lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP,
+             "Localization") &&
+         call_lifecycle_transition_(
+             map_server_srv_client_,
+             lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP,
+             "Map Server");
 }
 
 template <typename T>
