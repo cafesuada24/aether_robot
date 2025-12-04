@@ -28,7 +28,20 @@ ament_target_dependencies(mode_manager_node
 )
 
 
-install(TARGETS mode_manager_node
+add_library(map_manager src/map_manager.cpp)
+ament_target_dependencies(map_manager
+  rclcpp
+  aether_interfaces
+)
+add_executable(map_manager_node src/map_manager_node.cpp)
+target_link_libraries(map_manager_node map_manager)
+ament_target_dependencies(map_manager_node
+  rclcpp
+)
+
+install(TARGETS 
+  mode_manager_node
+  map_manager_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

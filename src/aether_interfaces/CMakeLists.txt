@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetWaypoints.srv"
   "srv/LLMPrompt.srv"
   "srv/Velocity.srv"
+  "srv/GetMaps.srv"
   "action/ChangeRobotMode.action"
   DEPENDENCIES std_msgs geometry_msgs
 )
