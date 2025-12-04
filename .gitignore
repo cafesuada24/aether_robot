@@ -4,6 +4,7 @@
 /.venv
 /requirements.txt
 /chroma
+/map
 log
 .env
 __pycache__
