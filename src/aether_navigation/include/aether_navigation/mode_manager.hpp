@@ -12,7 +12,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/service.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
-#include <thread>
 
 #include "aether_interfaces/action/change_robot_mode.hpp"
 
@@ -38,7 +37,7 @@ class ModeManager : public rclcpp::Node {
  private:
   void declare_parameters();
 
-  std::thread change_robot_mode_execution_thread_{};
+  // std::thread change_robot_mode_execution_thread_{};
 
   aether_interfaces::msg::RobotMode current_mode_{};
 
@@ -70,6 +69,7 @@ class ModeManager : public rclcpp::Node {
   rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr
       localization_srv_client_;
 
+  bool handling_request_ {false};
   inline bool call_lifecycle_transition_(
       rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr client,
       const uint8_t transition_id, const std::string& client_name,

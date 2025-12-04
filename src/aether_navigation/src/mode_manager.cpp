@@ -35,7 +35,7 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
                                   ChangeRobotMode::Goal::ConstSharedPtr goal) {
     RCLCPP_INFO(this->get_logger(), "Received change mode request: %u",
                 goal->mode.mode);
-    if (this->change_robot_mode_execution_thread_.joinable()) {
+    if (this->handling_request_) {
       RCLCPP_WARN(this->get_logger(),
                   "Previous request is being executed! Rejecting new mode "
                   "changing request.");
@@ -55,8 +55,7 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
       [this](const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
         auto execute_in_thread{
             [this, goal_handle]() { return this->change_state_(goal_handle); }};
-        this->change_robot_mode_execution_thread_ =
-            std::thread{execute_in_thread};
+            std::thread{execute_in_thread}.detach();
       }};
 
   this->change_mode_server_ = rclcpp_action::create_server<ChangeRobotMode>(
@@ -74,8 +73,13 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
     throw std::runtime_error(
         "FATAL: Failed to initialize Mapping service client.");
   }
+  std::thread{[this]() {
+    return call_lifecycle_transition_(
+        mapping_srv_client_,
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  }}.detach();
 
-  update_mode(MAPPING_MODE);
+  // update_mode(MAPPING_MODE);
 
   // Localization service clients
   this->localization_srv_client_ =
@@ -169,6 +173,7 @@ void ModeManager::change_state_(
 void ModeManager::send_robot_change_mode_action_result_(
     const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle,
     const ChangeRobotMode::Result::SharedPtr result) {
+  handling_request_ = false;
   if (rclcpp::ok()) {
     goal_handle->succeed(result);
     if (result->success) {
