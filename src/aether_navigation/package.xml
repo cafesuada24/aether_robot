@@ -16,6 +16,7 @@
   <depend>rclcpp</depend>
   <depend>aether_interfaces</depend>
   <depend>lifecycle_msgs</depend>
+  <depend>rclcpp_action</depend>
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

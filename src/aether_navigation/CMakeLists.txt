@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(aether_interfaces REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 
@@ -16,6 +17,7 @@ include_directories(include)
 add_library(mode_manager src/mode_manager.cpp)
 ament_target_dependencies(mode_manager
   rclcpp
+  rclcpp_action
   aether_interfaces
   lifecycle_msgs
 )

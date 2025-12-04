@@ -16,10 +16,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Encoder.msg"
   "msg/MotorSpeed.msg"
   "msg/RobotMode.msg"
-  "srv/ChangeRobotMode.srv"
   "srv/GetWaypoints.srv"
   "srv/LLMPrompt.srv"
   "srv/Velocity.srv"
+  "action/ChangeRobotMode.action"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

@@ -2,10 +2,13 @@
 
 #include "aether_navigation/mode_manager.hpp"
 
-#include <functional>
+#include <memory>
+#include <rclcpp/executors.hpp>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/create_server.hpp>
 
+#include "aether_interfaces/action/change_robot_mode.hpp"
 #include "aether_interfaces/msg/robot_mode.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
@@ -15,28 +18,61 @@ namespace aether_navigation {
 using namespace std::chrono_literals;
 
 ModeManager::ModeManager(rclcpp::NodeOptions options)
-    : rclcpp::Node("mode_manager", options),
-      change_mode_srv_{create_service<aether_interfaces::srv::ChangeRobotMode>(
-          "/robot_mode/change",
-          std::bind(&ModeManager::change_mode_srv_callback_, this,
-                    std::placeholders::_1, std::placeholders::_2))} {
+    : rclcpp::Node("mode_manager", options) {
   declare_parameters();
 
-  // Init state publisher
-  this->mode_publisher_ =
+  // Robot Mode publisher
+  this->mode_update_topic_ =
       this->create_publisher<aether_interfaces::msg::RobotMode>(
-          this->get_parameter("mode_topic").as_string(),
+          this->get_parameter("update_topic").as_string(),
           rclcpp::QoS(rclcpp::KeepLast(1)));
 
   update_mode(NO_MODE);
+
+  // #####################Server##################################
+
+  auto change_mode_goal_cb{[this](const rclcpp_action::GoalUUID& uuid,
+                                  ChangeRobotMode::Goal::ConstSharedPtr goal) {
+    RCLCPP_INFO(this->get_logger(), "Received change mode request: %u",
+                goal->mode.mode);
+    if (this->change_robot_mode_execution_thread_.joinable()) {
+      RCLCPP_WARN(this->get_logger(),
+                  "Previous request is being executed! Rejecting new mode "
+                  "changing request.");
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+    (void)uuid;
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  }};
+  auto change_mode_cancel_cb{
+      [this](const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
+        RCLCPP_INFO(this->get_logger(),
+                    "Received request to cancel change mode");
+        (void)goal_handle;
+        return rclcpp_action::CancelResponse::ACCEPT;
+      }};
+  auto change_mode_accepted_cb{
+      [this](const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
+        auto execute_in_thread{
+            [this, goal_handle]() { return this->change_state_(goal_handle); }};
+        this->change_robot_mode_execution_thread_ =
+            std::thread{execute_in_thread};
+      }};
+
+  this->change_mode_server_ = rclcpp_action::create_server<ChangeRobotMode>(
+      this, "/robot_mode/change", change_mode_goal_cb, change_mode_cancel_cb,
+      change_mode_accepted_cb);
+
+  // #############################################################
 
   // Mapping service clients
   this->mapping_srv_client_ =
       this->create_srv_client<lifecycle_msgs::srv::ChangeState>(
           this->get_parameter("mapping_service_name").as_string());
 
-  if (nullptr == this->mapping_srv_client_) {
-    return;
+  if (!this->mapping_srv_client_) {
+    throw std::runtime_error(
+        "FATAL: Failed to initialize Mapping service client.");
   }
 
   update_mode(MAPPING_MODE);
@@ -46,22 +82,140 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
       this->create_srv_client<lifecycle_msgs::srv::ChangeState>(
           this->get_parameter("localization_service_name").as_string());
 
-  if (nullptr == this->localization_srv_client_) {
-    return;
+  if (!this->localization_srv_client_) {
+    throw std::runtime_error(
+        "FATAL: Failed to initialize Localization service client.");
   }
-
-  auto configure_request{
-      std::make_shared<lifecycle_msgs::srv::ChangeState::Request>()};
-  configure_request->transition.id =
-      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE;
-  this->localization_srv_client_->async_send_request(
-      configure_request);
 }
 
+ModeManager::~ModeManager() {}
+
 void ModeManager::declare_parameters() {
-  this->declare_parameter("mode_topic", "/robot_mode/status");
+  this->declare_parameter("update_topic", "/robot_mode/status_update");
   this->declare_parameter("mapping_service_name", "/slam_toolbox/change_state");
   this->declare_parameter("localization_service_name", "/amcl/change_state");
+}
+
+void ModeManager::change_state_(
+    const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
+  RCLCPP_INFO(this->get_logger(), "Start changing state");
+
+  const auto goal_mode{goal_handle->get_goal()->mode.mode};
+  auto feedback{std::make_shared<ChangeRobotMode::Feedback>()};
+  auto result{std::make_shared<ChangeRobotMode::Result>()};
+  result->success = true;
+
+  if (goal_mode >= NUM_MODES) {
+    RCLCPP_INFO(this->get_logger(), "Invalid mode: %u", goal_mode);
+    result->success = false;
+    return send_robot_change_mode_action_result_(goal_handle, result);
+  }
+
+  if (goal_mode == current_mode_.mode) {
+    return send_robot_change_mode_action_result_(goal_handle, result);
+  }
+
+  if (current_mode_.mode == LOCALIZATION_MODE) {
+    feedback->msg = "Deactivating Localization mode";
+    goal_handle->publish_feedback(feedback);
+    if (!deactivate_localization_()) {
+      RCLCPP_INFO(this->get_logger(), "Failed to deactivate localization mode");
+      result->success = false;
+      return send_robot_change_mode_action_result_(goal_handle, result);
+    }
+    update_mode(NO_MODE);
+    feedback->msg = "Localization mode deactivated";
+    goal_handle->publish_feedback(feedback);
+  }
+
+  if (current_mode_.mode == MAPPING_MODE) {
+    feedback->msg = "Deactivating Mapping mode";
+    goal_handle->publish_feedback(feedback);
+    if (!deactivate_mapping_()) {
+      RCLCPP_INFO(this->get_logger(), "Failed to deactivate mapping mode");
+      result->success = false;
+      return send_robot_change_mode_action_result_(goal_handle, result);
+    }
+    update_mode(NO_MODE);
+    feedback->msg = "Mapping mode deactivated";
+    goal_handle->publish_feedback(feedback);
+  }
+
+  if (goal_mode == MAPPING_MODE) {
+    feedback->msg = "Activating Mapping mode";
+    goal_handle->publish_feedback(feedback);
+    if (!activate_mapping_()) {
+      RCLCPP_INFO(this->get_logger(), "Failed to activate mapping mode");
+      result->success = false;
+      return send_robot_change_mode_action_result_(goal_handle, result);
+    }
+    update_mode(MAPPING_MODE);
+  }
+
+  if (goal_mode == LOCALIZATION_MODE) {
+    feedback->msg = "Activating Localization mode";
+    goal_handle->publish_feedback(feedback);
+    if (!activate_localization_()) {
+      RCLCPP_INFO(this->get_logger(), "Failed to activate localization mode");
+      result->success = false;
+      return send_robot_change_mode_action_result_(goal_handle, result);
+    }
+    update_mode(LOCALIZATION_MODE);
+  }
+
+  return send_robot_change_mode_action_result_(goal_handle, result);
+}
+
+void ModeManager::send_robot_change_mode_action_result_(
+    const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle,
+    const ChangeRobotMode::Result::SharedPtr result) {
+  if (rclcpp::ok()) {
+    goal_handle->succeed(result);
+    if (result->success) {
+      RCLCPP_INFO(this->get_logger(), "Robot state changed to: %u",
+                  goal_handle->get_goal()->mode.mode);
+    } else {
+      RCLCPP_INFO(this->get_logger(), "Failed to change robot state");
+    }
+  }
+}
+
+bool ModeManager::activate_mapping_() {
+  return call_lifecycle_transition_(
+      mapping_srv_client_, lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+      "Mapping");
+}
+
+bool ModeManager::deactivate_mapping_() {
+  return call_lifecycle_transition_(
+      mapping_srv_client_,
+      lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE, "Mapping");
+}
+
+bool ModeManager::activate_localization_() {
+  if (!call_lifecycle_transition_(
+          localization_srv_client_,
+          lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+          "Localization")) {
+    return false;
+  }
+
+  return call_lifecycle_transition_(
+      localization_srv_client_,
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE, "Localization");
+}
+
+bool ModeManager::deactivate_localization_() {
+  if (!call_lifecycle_transition_(
+          localization_srv_client_,
+          lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE,
+          "Localization")) {
+    return false;
+  }
+
+  return call_lifecycle_transition_(
+      localization_srv_client_,
+      lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP, "Localization");
 }
 
 template <typename T>
@@ -82,149 +236,38 @@ typename rclcpp::Client<T>::SharedPtr ModeManager::create_srv_client(
   return client;
 }
 
-void ModeManager::change_mode_srv_callback_(
-    const aether_interfaces::srv::ChangeRobotMode::Request::SharedPtr request,
-    const aether_interfaces::srv::ChangeRobotMode::Response::SharedPtr
-        response) {
-  const auto mode{static_cast<RobotMode>(request->mode.mode)};
-
-  if (mode == current_mode_.mode) {
-    return;
-  }
-
-  if (mode < 0 || mode >= NUM_MODES) {
-    response->success = false;
-    RCLCPP_INFO(this->get_logger(),
-                "Failed to change robot mode: invalid mode %ud.", mode);
-    return;
-  }
-
-  if (mode == MAPPING_MODE) {
-    if (current_mode_.mode == LOCALIZATION_MODE) {
-      auto deactivate_request{
-          std::make_shared<lifecycle_msgs::srv::ChangeState::Request>()};
-      deactivate_request->transition.id =
-          lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE;
-      this->localization_srv_client_->async_send_request(
-          deactivate_request,
-          std::bind(&ModeManager::localization_srv_deactivate_request_callback_,
-                    this, std::placeholders::_1));
-    } else {
-      activate_mapping();
-    }
-
-  } else if (mode == LOCALIZATION_MODE) {
-    RCLCPP_INFO(this->get_logger(), "called");
-    if (current_mode_.mode == MAPPING_MODE) {
-      auto deactivate_request{
-          std::make_shared<lifecycle_msgs::srv::ChangeState::Request>()};
-      deactivate_request->transition.id =
-          lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE;
-      this->mapping_srv_client_->async_send_request(
-          deactivate_request,
-          std::bind(&ModeManager::mapping_srv_deactivate_request_callback_,
-                    this, std::placeholders::_1));
-    } else {
-      activate_localization();
-    }
-  }
-}
-
-void ModeManager::mapping_srv_deactivate_request_callback_(
-    const rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedFuture
-        future) {
-  if (!future.valid()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to call Mapping service");
-    return;
-  }
-
-  if (!future.get()->success) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to deactivate Mapping service");
-    return;
-  }
-  RCLCPP_INFO(this->get_logger(), "Mapping Service deactivated.");
-  update_mode(NO_MODE);
-
-  activate_localization();
-}
-void ModeManager::mapping_srv_activate_request_callback_(
-    const rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedFuture
-        future) {
-  if (!future.valid()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to call Mapping service");
-    return;
-  }
-
-  if (!future.get()->success) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to activate Mapping service");
-    return;
-  }
-
-  RCLCPP_INFO(this->get_logger(), "Mapping Service activated.");
-  update_mode(MAPPING_MODE);
-}
-
-void ModeManager::activate_mapping() {
-  auto active_request{
-      std::make_shared<lifecycle_msgs::srv::ChangeState::Request>()};
-  active_request->transition.id =
-      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE;
-  this->mapping_srv_client_->async_send_request(
-      active_request,
-      std::bind(&ModeManager::mapping_srv_activate_request_callback_, this,
-                std::placeholders::_1));
-}
-
-void ModeManager::localization_srv_deactivate_request_callback_(
-    const rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedFuture
-        future) {
-  if (!future.valid()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to call Localization service");
-    return;
-  }
-
-  if (!future.get()->success) {
-    RCLCPP_ERROR(this->get_logger(),
-                 "Failed to deactivate Localization service");
-    return;
-  }
-  RCLCPP_INFO(this->get_logger(), "Localization Service deactivated.");
-  update_mode(NO_MODE);
-
-  activate_mapping();
-}
-
-void ModeManager::localization_srv_activate_request_callback_(
-    const rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedFuture
-        future) {
-  if (!future.valid()) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to call Localization service");
-    return;
-  }
-
-  if (!future.get()->success) {
-    RCLCPP_ERROR(this->get_logger(), "Failed to activate Localization service");
-    return;
-  }
-
-  RCLCPP_INFO(this->get_logger(), "Localization Service activated.");
-  update_mode(LOCALIZATION_MODE);
-}
-
-void ModeManager::activate_localization() {
-  auto active_request{
-      std::make_shared<lifecycle_msgs::srv::ChangeState::Request>()};
-  active_request->transition.id =
-      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE;
-  this->localization_srv_client_->async_send_request(
-      active_request,
-      std::bind(&ModeManager::localization_srv_activate_request_callback_, this,
-                std::placeholders::_1));
-}
-
 void ModeManager::update_mode(RobotMode mode) {
+  std::lock_guard<std::mutex> lock(current_mode_mutex_);
   current_mode_.mode = mode;
-  mode_publisher_->publish(current_mode_);
+  mode_update_topic_->publish(current_mode_);
+}
+
+inline bool ModeManager::call_lifecycle_transition_(
+    rclcpp::Client<lifecycle_msgs::srv::ChangeState>::SharedPtr client,
+    const uint8_t transition_id, const std::string& client_name,
+    const std::chrono::seconds timeout) {
+  auto transition_request =
+      std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
+  transition_request->transition.id = transition_id;
+
+  auto future{client->async_send_request(transition_request)};
+
+  if (future.wait_for(timeout) != std::future_status::ready) {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "Failed to call %s service with transition %u: Timeout/Client Error",
+        client_name.c_str(), transition_id);
+    return false;
+  }
+
+  const auto success{future.valid() && future.get()->success};
+
+  if (!success) {
+    RCLCPP_ERROR(this->get_logger(), "%s transition %u failed.",
+                 client_name.c_str(), transition_id);
+  }
+
+  return success;
 }
 
 };  // namespace aether_navigation

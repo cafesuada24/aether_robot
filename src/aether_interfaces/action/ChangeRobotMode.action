@@ -1,3 +1,5 @@
 aether_interfaces/RobotMode mode
 ---
 bool success
+---
+string msg
