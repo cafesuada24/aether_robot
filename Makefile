@@ -26,7 +26,7 @@ build_docker_cont: Dockerfile
 		--build-arg USERNAME=$(or $(USERNAME), $(DEFAULT_DOCKER_USER)) \
 		--build-arg USER_UID=$(or $(USER_UID), $(DEFAULT_DOCKER_UID)) \
 		--build-arg USER_GID=$(or $(USER_GID), $(DEFAULT_DOCKER_GID)) \
-		-t aether-bot-armv8 .
+		--output type=docker,dest=aether-bot-armv8.tar -t aether-bot-arm-v8:latest
 
 run_sim:
 	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(slam), 'False')
