@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(aether_interfaces REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(SQLite3 REQUIRED)
+find_package(slam_toolbox REQUIRED)
 
 include_directories(include)
 
@@ -27,11 +29,14 @@ ament_target_dependencies(mode_manager_node
   rclcpp
 )
 
+add_library(string_utils src/string_utils.cpp)
 
 add_library(map_manager src/map_manager.cpp)
+target_link_libraries(map_manager string_utils SQLite::SQLite3)
 ament_target_dependencies(map_manager
   rclcpp
   aether_interfaces
+  slam_toolbox
 )
 add_executable(map_manager_node src/map_manager_node.cpp)
 target_link_libraries(map_manager_node map_manager)
