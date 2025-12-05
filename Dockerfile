@@ -1,23 +1,21 @@
 # FROM osrf/ros:jazzy-desktop
-FROM arm64v8/ros:jazzy
+FROM ros:jazzy-ros-base
 
 SHELL ["/bin/bash", "-c"]
 
 ENV DISPLAY=:0
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     apt-utils \
-    python3-colcon-common-extensions \
-    python3-rosdep \
     python3-venv \
-    sudo \
     vim \
-    make
+    make \
+    && rm -rf /var/lib/apt/lists/*
 
 # COPY config/ /site_config/
 COPY scripts/entrypoint.bash /entrypoint.bash
 
-ARG DEFAULT_UERNAME=ubuntu
+ARG DEFAULT_USERNAME=ubuntu
 ARG USERNAME=$DEFAULT_USERNAME
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -30,7 +28,6 @@ RUN groupadd --gid $USER_GID $USERNAME >&/dev/null || echo "Group already exists
 RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
   && chmod 0440 /etc/sudoers.d/$USERNAME
 
-USER $USERNAME
 
 COPY scripts/bashrc /home/$USERNAME/.bashrc
 
@@ -42,11 +39,13 @@ COPY scripts/setup.bash scripts/setup.bash
 
 RUN source /opt/ros/jazzy/setup.bash && \
     rosdep update --rosdistro jazzy && \
-    rosdep install --rosdistro jazzy --from-paths src --ignore-src --skip-keys object_tracker -r -y
+    apt-get update && \
+    rosdep install --rosdistro jazzy --from-paths src --ignore-src -r -y
 
-RUN apt-get install -y ros-jazzy-rmw-cyclonedds-cpp
+RUN apt-get update && apt-get install -y ros-jazzy-rmw-cyclonedds-cpp && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN sudo rm -rf /var/lib/apt/lists/*
+USER $USERNAME
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.bash"]
 

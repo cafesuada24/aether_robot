@@ -22,7 +22,7 @@ build:
 	colcon build $(BUILD_ARGS) --packages-select $(PACKAGES_TO_BUILD)
 
 build_docker_cont: Dockerfile
-	docker build --platform='linux/arm64/v8' \
+	docker buildx build --platform linux/arm64 \
 		--build-arg USERNAME=$(or $(USERNAME), $(DEFAULT_DOCKER_USER)) \
 		--build-arg USER_UID=$(or $(USER_UID), $(DEFAULT_DOCKER_UID)) \
 		--build-arg USER_GID=$(or $(USER_GID), $(DEFAULT_DOCKER_GID)) \
