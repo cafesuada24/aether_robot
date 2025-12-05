@@ -15,6 +15,7 @@
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
+    ExecuteProcess,
     GroupAction,
     IncludeLaunchDescription,
     SetEnvironmentVariable,
@@ -213,9 +214,7 @@ def generate_launch_description() -> LaunchDescription:
     # currently only work on the LoadComposableNodes commands and not on the
     # ComposableNode node function itself
 
-
-
-    slam_lifecycle_nodes = ['slam_toolbox', 'map_saver']
+    slam_lifecycle_nodes = ['slam_toolbox']
     amcl_lifecycle_nodes = ['map_server', 'amcl']
 
     load_composable_nodes = GroupAction(
@@ -312,6 +311,23 @@ def generate_launch_description() -> LaunchDescription:
                 package=PKG_NAME,
                 executable='mode_manager_node',
                 name='mode_manager',
+                output='screen',
+                arguments=['--ros-args', '--log-level', log_level],
+            ),
+            ExecuteProcess(
+                cmd=[
+                    'ros2',
+                    'action',
+                    'send_goal',
+                    '/robot_mode/change',
+                    'aether_interfaces/action/ChangeRobotMode',
+                    '{mode: {mode: 1}}',
+                ]
+            ),
+            Node(
+                package=PKG_NAME,
+                executable='map_manager_node',
+                name='map_manager',
                 output='screen',
                 arguments=['--ros-args', '--log-level', log_level],
             ),
