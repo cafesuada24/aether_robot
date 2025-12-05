@@ -5,6 +5,7 @@
 /requirements.txt
 /chroma
 /map
+/data
 log
 .env
 __pycache__
