@@ -2,3 +2,4 @@
 bool success
 string message
 string[] map_names
+uint16[] map_ids

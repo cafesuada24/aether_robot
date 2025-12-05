@@ -1,0 +1,4 @@
+uint16 map_id
+---
+string message
+bool success
