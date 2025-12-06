@@ -30,9 +30,9 @@ controller_server:
     controller_frequency: 20.0
     costmap_update_timeout: 0.30
     publish_zero_velocity: true
-    min_x_velocity_threshold: 0.11
+    min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.45
+    min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -62,19 +62,19 @@ controller_server:
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000
-      ax_max: 0.7
-      ax_min: -0.7
+      ax_max: 2.3
+      ax_min: -2.3
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 3.5
+      az_max: 14.0
       vx_std: 0.2
       vy_std: 0.0
       wz_std: 0.4
-      vx_max: 0.3
-      vx_min: -0.15
+      vx_max: 0.25
+      vx_min: -0.12
       vy_max: 0.0
       vy_min: 0.0
-      wz_max: 3.14
+      wz_max: 3.2
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
@@ -304,13 +304,13 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.3, 0.0, 3.14]
-    min_velocity: [-0.15, 0.0, -3.14]
-    max_accel: [0.7, 0.0, 3.5]
-    max_decel: [-0.7, 0.0, -3.5]
+    max_velocity: [0.25, 0.0, 3.2]
+    min_velocity: [-0.12, 0.0, -3.2]
+    max_accel: [2.3, 0.0, 14.0]
+    max_decel: [-2.3, 0.0, -14.0]
     odom_topic: "/odometry/filtered"
     odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0]
+    deadband_velocity: [0.12, 0.0, 0.0]
     velocity_timeout: 1.0
     enable_stamped_cmd_vel: true
 
