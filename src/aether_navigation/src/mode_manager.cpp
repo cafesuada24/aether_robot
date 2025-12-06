@@ -2,8 +2,11 @@
 
 #include "aether_navigation/mode_manager.hpp"
 
+#include <rmw/types.h>
+
 #include <memory>
 #include <rclcpp/executors.hpp>
+#include <rclcpp/publisher_options.hpp>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/create_server.hpp>
@@ -21,11 +24,14 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
     : rclcpp::Node("mode_manager", options) {
   declare_parameters();
 
+  rclcpp::QoS mode_update_topic_qos(rclcpp::KeepLast(1));
+  mode_update_topic_qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
+  mode_update_topic_qos.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
   // Robot Mode publisher
   this->mode_update_topic_ =
       this->create_publisher<aether_interfaces::msg::RobotMode>(
           this->get_parameter("update_topic").as_string(),
-          rclcpp::QoS(rclcpp::KeepLast(1)));
+          mode_update_topic_qos);
 
   update_mode(NO_MODE);
 
@@ -252,8 +258,7 @@ bool ModeManager::deactivate_localization_() {
              "Localization") &&
          call_lifecycle_transition_(
              map_server_srv_client_,
-             lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP,
-             "Map Server");
+             lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP, "Map Server");
 }
 
 template <typename T>
