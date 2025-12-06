@@ -217,7 +217,7 @@ def generate_launch_description() -> LaunchDescription:
                 ),
                 launch_arguments={
                     'namespace': namespace,
-                    # 'use_sim_time': use_sim_time,
+                    'use_sim_time': use_sim_time,
                     'autostart': autostart,
                     'params_file': nav2_params_file,
                     'use_composition': use_composition,
@@ -232,7 +232,7 @@ def generate_launch_description() -> LaunchDescription:
                 condition=IfCondition(use_localization),
                 launch_arguments={
                     'namespace': namespace,
-                    # 'use_sim_time': use_sim_time,
+                    'use_sim_time': use_sim_time,
                     'autostart': autostart,
                     'params_file': lam_params_file,
                     'use_composition': use_composition,
