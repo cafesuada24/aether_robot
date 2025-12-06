@@ -310,7 +310,7 @@ velocity_smoother:
     max_decel: [-0.7, 0.0, -3.5]
     odom_topic: "/odometry/filtered"
     odom_duration: 0.1
-    deadband_velocity: [0.1, 0.0, 0.4]
+    deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
     enable_stamped_cmd_vel: true
 
