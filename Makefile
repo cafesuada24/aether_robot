@@ -28,6 +28,11 @@ build_docker_cont: Dockerfile
 		--build-arg USER_GID=$(or $(USER_GID), $(DEFAULT_DOCKER_GID)) \
 		--output type=docker,dest=aether-bot-armv8.tar -t aether-bot-arm-v8:latest
 
+set_robot_mode:
+	ros2 service call /map_manager/load_map aether_interfaces/srv/LoadMap "{map_id: $(or $(map_id), 1)}" \
+		&& ros2 action send_goal /robot_mode/change aether_interfaces/action/ChangeRobotMode "{mode: {mode: $(or $(mode), 2)}}"
+
+
 run_sim:
 	ros2 launch aether_gazebo launch_sim.py slam:=$(or $(slam), 'False')
 
