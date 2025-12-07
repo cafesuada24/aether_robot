@@ -65,7 +65,7 @@ class WaypointsNode(Node):
 
         chroma_path = self.get_parameter("chroma_path").get_parameter_value().string_value
         if not chroma_path:
-            chroma_path = os.path.expanduser("~/chroma_waypoints")
+            chroma_path = os.path.join(os.getcwd(), "data/chroma")
 
         os.makedirs(chroma_path, exist_ok=True)
         self.get_logger().info(f"Using ChromaDB persistent path: {chroma_path}")
