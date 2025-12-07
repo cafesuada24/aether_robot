@@ -21,7 +21,11 @@ namespace aether_navigation {
 using namespace std::chrono_literals;
 
 ModeManager::ModeManager(rclcpp::NodeOptions options)
-    : rclcpp::Node("mode_manager", options) {
+    : rclcpp::Node("mode_manager", options),
+      client_callback_group_{
+          create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive)},
+      action_callback_group_{
+          create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive)} {
   declare_parameters();
 
   rclcpp::QoS mode_update_topic_qos(rclcpp::KeepLast(1));
@@ -59,14 +63,16 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
       }};
   auto change_mode_accepted_cb{
       [this](const std::shared_ptr<GoalHandleChangeRobotMode> goal_handle) {
-        auto execute_in_thread{
-            [this, goal_handle]() { return this->change_state_(goal_handle); }};
-        std::thread{execute_in_thread}.detach();
+        return this->change_state_(goal_handle);
+        // auto execute_in_thread{
+        //     [this, goal_handle]() { return this->change_state_(goal_handle); }};
+        // std::thread{execute_in_thread}.detach();
       }};
 
   this->change_mode_server_ = rclcpp_action::create_server<ChangeRobotMode>(
       this, "/robot_mode/change", change_mode_goal_cb, change_mode_cancel_cb,
-      change_mode_accepted_cb);
+      change_mode_accepted_cb, rcl_action_server_get_default_options(),
+      action_callback_group_);
 
   // #############################################################
 
@@ -102,11 +108,14 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
   // #############################################################
 
   // Some node need initial configure state
-  std::thread{[this]() {
-    return call_lifecycle_transition_(
-        mapping_srv_client_,
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
-  }}.detach();
+  call_lifecycle_transition_(
+      mapping_srv_client_,
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  // std::thread{[this]() {
+  //   return call_lifecycle_transition_(
+  //       mapping_srv_client_,
+  //       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  // }}.detach();
 }
 
 ModeManager::~ModeManager() {}
@@ -264,7 +273,8 @@ bool ModeManager::deactivate_localization_() {
 template <typename T>
 typename rclcpp::Client<T>::SharedPtr ModeManager::create_srv_client(
     const std::string& srv_name) {
-  auto client{this->create_client<T>(srv_name)};
+  auto client{this->create_client<T>(srv_name, rclcpp::ServicesQoS(),
+                                     client_callback_group_)};
   while (!client->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(),

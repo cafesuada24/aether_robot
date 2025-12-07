@@ -37,9 +37,10 @@ class ModeManager : public rclcpp::Node {
  private:
   void declare_parameters();
 
-  // std::thread change_robot_mode_execution_thread_{};
-
   aether_interfaces::msg::RobotMode current_mode_{};
+
+  rclcpp::CallbackGroup::SharedPtr client_callback_group_;
+  rclcpp::CallbackGroup::SharedPtr action_callback_group_;
 
   std::mutex current_mode_mutex_ {};
   void update_mode(RobotMode mode);
