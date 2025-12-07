@@ -1,5 +1,5 @@
-string map_name
----
 uint16 map_id
+string name
+---
 string message
 bool success

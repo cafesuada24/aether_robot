@@ -22,6 +22,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetMaps.srv"
   "srv/SaveMap.srv"
   "srv/LoadMap.srv"
+  "srv/UpdateMap.srv"
+  "srv/DeleteMap.srv"
   "action/ChangeRobotMode.action"
   DEPENDENCIES std_msgs geometry_msgs
 )

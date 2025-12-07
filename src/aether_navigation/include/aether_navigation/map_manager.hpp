@@ -14,6 +14,8 @@
 #include "aether_interfaces/srv/get_maps.hpp"
 #include "aether_interfaces/srv/save_map.hpp"
 #include "aether_interfaces/srv/load_map.hpp"
+#include "aether_interfaces/srv/update_map.hpp"
+#include "aether_interfaces/srv/delete_map.hpp"
 
 namespace aether_navigation {
 namespace fs = std::filesystem;
@@ -22,6 +24,8 @@ class MapManager : public rclcpp::Node {
   using GetMaps = aether_interfaces::srv::GetMaps;
   using SaveMap = aether_interfaces::srv::SaveMap;
   using LoadMap = aether_interfaces::srv::LoadMap;
+  using UpdateMap = aether_interfaces::srv::UpdateMap;
+  using DeleteMap = aether_interfaces::srv::DeleteMap;
 
   MapManager();
   ~MapManager();
@@ -44,6 +48,12 @@ class MapManager : public rclcpp::Node {
   void handle_load_map_request_(LoadMap::Request::ConstSharedPtr request,
                                 LoadMap::Response::SharedPtr response);
 
+  rclcpp::Service<UpdateMap>::SharedPtr update_map_srv_ {};
+  void handle_update_map_request_(UpdateMap::Request::ConstSharedPtr request,
+                                UpdateMap::Response::SharedPtr response);
+  rclcpp::Service<DeleteMap>::SharedPtr delete_map_srv_ {};
+  void handle_delete_map_request_(DeleteMap::Request::ConstSharedPtr request,
+                                DeleteMap::Response::SharedPtr response);
 
   rclcpp::CallbackGroup::SharedPtr save_map_cli_cb_group_;
   rclcpp::Client<slam_toolbox::srv::SaveMap>::SharedPtr save_map_cli_{};
