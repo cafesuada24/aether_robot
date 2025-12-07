@@ -1,0 +1,6 @@
+uint16 map_id
+string waypoint_id
+string name
+---
+bool success
+string message

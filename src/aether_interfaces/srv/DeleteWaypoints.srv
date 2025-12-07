@@ -1,0 +1,6 @@
+uint16 map_id
+string[] waypoint_ids
+---
+bool success
+string message
+uint32 deleted_count

@@ -12,18 +12,25 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME} 
-  "msg/Waypoint.msg"
+  # "msg/Waypoint.msg"
   "msg/Encoder.msg"
   "msg/MotorSpeed.msg"
   "msg/RobotMode.msg"
-  "srv/GetWaypoints.srv"
   "srv/LLMPrompt.srv"
   "srv/Velocity.srv"
+
   "srv/GetMaps.srv"
   "srv/SaveMap.srv"
   "srv/LoadMap.srv"
   "srv/UpdateMap.srv"
   "srv/DeleteMap.srv"
+
+  "srv/GetWaypoints.srv"
+  "srv/AddWaypoint.srv"
+  "srv/UpdateWaypoint.srv"
+  "srv/DeleteWaypoints.srv"
+  "srv/SemanticQueryWaypoints.srv"
+
   "action/ChangeRobotMode.action"
   DEPENDENCIES std_msgs geometry_msgs
 )

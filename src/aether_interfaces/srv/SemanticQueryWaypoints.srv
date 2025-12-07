@@ -1,4 +1,6 @@
 uint16 map_id
+string query
+uint32 k
 ---
 bool success
 string message
@@ -7,3 +9,4 @@ string[] names
 float64[] xs
 float64[] ys
 float64[] yaws
+float64[] distances
