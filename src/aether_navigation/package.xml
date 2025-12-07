@@ -18,6 +18,8 @@
   <depend>lifecycle_msgs</depend>
   <depend>rclcpp_action</depend>
 
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>python3</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>nav2_common</exec_depend>

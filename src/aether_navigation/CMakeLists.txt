@@ -52,6 +52,11 @@ install(TARGETS
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  scripts/waypoints_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(
   DIRECTORY params launch
   DESTINATION share/${PROJECT_NAME}
