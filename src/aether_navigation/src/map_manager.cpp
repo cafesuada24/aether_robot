@@ -73,8 +73,7 @@ MapManager::MapManager()
       save_map_cli_cb_group_{
           create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive)},
       map_set_param_cli_{std::make_shared<rclcpp::AsyncParametersClient>(
-          this, "/map_server", rmw_qos_profile_parameters,
-          save_map_cli_cb_group_)} {
+          this, "/map_server", rmw_qos_profile_parameters)} {
   declare_parameters_();
 
   // ########################DB###########################################

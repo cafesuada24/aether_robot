@@ -108,14 +108,14 @@ ModeManager::ModeManager(rclcpp::NodeOptions options)
   // #############################################################
 
   // Some node need initial configure state
-  call_lifecycle_transition_(
-      mapping_srv_client_,
-      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
-  // std::thread{[this]() {
-  //   return call_lifecycle_transition_(
-  //       mapping_srv_client_,
-  //       lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
-  // }}.detach();
+  // call_lifecycle_transition_(
+  //     mapping_srv_client_,
+  //     lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  std::thread{[this]() {
+    return call_lifecycle_transition_(
+        mapping_srv_client_,
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE, "Mapping");
+  }}.detach();
 }
 
 ModeManager::~ModeManager() {}
