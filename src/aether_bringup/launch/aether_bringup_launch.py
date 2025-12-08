@@ -185,18 +185,19 @@ def generate_launch_description() -> LaunchDescription:
     # Using Multi-Threaded Executor for concurrency benefits
 
     # Hardware Drivers Group (Only run if NOT in simulation mode)
+    # Camera Launch
+    create_cam_container_cmd = Node(
+        condition=IfCondition(use_composition),
+        name=CAM_PIPELINE_CONTAINER_NAME,
+        package='rclcpp_components',
+        executable='component_container_mt',
+        arguments=['--ros-args', '--log-level', log_level],
+        output='screen',
+    )
+
     hardware_group = GroupAction(
         condition=UnlessCondition(sim_mode),
         actions=[
-            # Camera Launch
-            Node(
-                condition=IfCondition(use_composition),
-                name=CAM_PIPELINE_CONTAINER_NAME,
-                package='rclcpp_components',
-                executable='component_container_mt',
-                arguments=['--ros-args', '--log-level', log_level],
-                output='screen',
-            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([pkg_share, 'launch', 'camera_launch.py']),
@@ -354,6 +355,7 @@ def generate_launch_description() -> LaunchDescription:
             declare_use_composition_cmd,
             declare_log_level_cmd,
             # Core Robot State & Control
+            create_cam_container_cmd,
             robot_state_publisher_node,
             delayed_controller_manager_spawner,
             robot_controller_spawner,
