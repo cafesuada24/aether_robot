@@ -324,13 +324,6 @@ def generate_launch_description() -> LaunchDescription:
                     '{mode: {mode: 1}}',
                 ]
             ),
-            Node(
-                package=PKG_NAME,
-                executable='map_manager_node',
-                name='map_manager',
-                output='screen',
-                arguments=['--ros-args', '--log-level', log_level],
-            ),
         ],
     )
 

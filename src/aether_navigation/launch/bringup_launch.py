@@ -89,7 +89,8 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
-        'RCUTILS_LOGGING_BUFFERED_STREAM', '1',
+        'RCUTILS_LOGGING_BUFFERED_STREAM',
+        '1',
     )
 
     declare_namespace_cmd = DeclareLaunchArgument(
@@ -180,6 +181,21 @@ def generate_launch_description() -> LaunchDescription:
         description='lam container name',
     )
 
+    run_map_manager_node = Node(
+        package=PKG_NAME,
+        executable='map_manager_node',
+        name='map_manager',
+        output='screen',
+        arguments=['--ros-args', '--log-level', log_level],
+    )
+    run_waypoints_manager_node = Node(
+        package=PKG_NAME,
+        executable='waypoints_node.py',
+        name='waypoints_manager',
+        output='screen',
+        arguments=['--ros-args', '--log-level', log_level],
+    )
+
     # Specify the actions
     bringup_cmd_group = GroupAction(
         [
@@ -206,11 +222,7 @@ def generate_launch_description() -> LaunchDescription:
                 remappings=remappings,
                 output='screen',
             ),
-
             # Lifecycle manager
-
-
-
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([launch_dir, 'navigation_launch.py']),
@@ -227,7 +239,9 @@ def generate_launch_description() -> LaunchDescription:
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([launch_dir, 'localization_and_mapping_launch.py']),
+                    PathJoinSubstitution(
+                        [launch_dir, 'localization_and_mapping_launch.py'],
+                    ),
                 ),
                 condition=IfCondition(use_localization),
                 launch_arguments={
@@ -289,6 +303,8 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(declare_use_namespace_cmd)
     # ld.add_action(declare_slam_cmd)
     # ld.add_action(declare_map_yaml_cmd)
+    ld.add_action(run_map_manager_node)
+    ld.add_action(run_waypoints_manager_node)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_nav2_params_file_cmd)
     ld.add_action(declare_lam_params_file_cmd)
