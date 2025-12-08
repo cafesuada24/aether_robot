@@ -18,7 +18,7 @@ wheel_controller:
     left_wheel_names: ['wheel_front_left_joint']
     right_wheel_names: ['wheel_front_right_joint']
 
-    wheel_separation: 0.153
+    wheel_separation: 0.137
     # wheel_separation: 0.1325 # real value
     wheel_radius: 0.0325
 
