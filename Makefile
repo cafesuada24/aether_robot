@@ -11,7 +11,7 @@ DEFAULT_DOCKER_GID := $(shell id -g)
 
 
 
-.PHONY: run build build_clean launch_rsp launch_sim run_rviz
+.PHONY: run build build_docker_cont 
 
 run:
 	ros2 launch aether_bringup aether_bringup_launch.py \
@@ -66,3 +66,6 @@ run_teleop_keyboard:
 new_docker_shell:
 	docker exec -it $(or $(cont_name), 'aether_bot_cont') bash
 
+save_map:
+	ros2 service call /map_manager/save_map aether_interfaces/srv/SaveMap "{name: $(name)}"
+	
