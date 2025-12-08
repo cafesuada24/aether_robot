@@ -30,6 +30,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/UpdateWaypoint.srv"
   "srv/DeleteWaypoints.srv"
   "srv/SemanticQueryWaypoints.srv"
+  "srv/MoveToWaypoint.srv"
 
   "action/ChangeRobotMode.action"
   DEPENDENCIES std_msgs geometry_msgs
