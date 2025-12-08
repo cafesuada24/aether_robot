@@ -1,4 +1,4 @@
-uint32 map_id
+uint16 map_id
 string waypoint_id
 ---
 bool success
