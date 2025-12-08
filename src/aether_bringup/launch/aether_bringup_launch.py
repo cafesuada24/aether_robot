@@ -17,6 +17,7 @@ from launch_ros.substitutions import FindPackageShare
 PKG_NAME = 'aether_bringup'
 NAV2_CONTAINER_NAME = 'nav2_container'
 LAM_CONTAINER_NAME = 'lam_container'
+CAM_PIPELINE_CONTAINER_NAME = 'cam_container'
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -91,12 +92,13 @@ def generate_launch_description() -> LaunchDescription:
     # --- 3. Launch Configurations ---
     model_path = LaunchConfiguration('model')
     sim_mode = LaunchConfiguration('sim_mode')
-    slam = LaunchConfiguration('slam')
+    # slam = LaunchConfiguration('slam')
     use_localization = LaunchConfiguration('use_localization')
-    map_yaml = LaunchConfiguration('map')
+    # map_yaml = LaunchConfiguration('map')
     webserver = LaunchConfiguration('webserver')
     agent = LaunchConfiguration('agent')
     use_composition = LaunchConfiguration('use_composition')
+    log_level = LaunchConfiguration('log_level')
 
     # --- 4. Declare Launch Arguments (Using PathJoinSubstitution for defaults) ---
     declare_model_path_cmd = DeclareLaunchArgument(
@@ -147,6 +149,12 @@ def generate_launch_description() -> LaunchDescription:
         choices=['True', 'False'],
     )
 
+    declare_log_level_cmd = DeclareLaunchArgument(
+        'log_level',
+        default_value='info',
+        description='log level',
+    )
+
     # --- 5. Nodes and Actions ---
 
     # Twist Mux Node (Manages multiple velocity commands)
@@ -181,10 +189,22 @@ def generate_launch_description() -> LaunchDescription:
         condition=UnlessCondition(sim_mode),
         actions=[
             # Camera Launch
+            Node(
+                condition=IfCondition(use_composition),
+                name=CAM_PIPELINE_CONTAINER_NAME,
+                package='rclcpp_components',
+                executable='component_container_mt',
+                arguments=['--ros-args', '--log-level', log_level],
+                output='screen',
+            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([pkg_share, 'launch', 'camera_launch.py']),
                 ),
+                launch_arguments=[
+                    ('use_composition', use_composition),
+                    ('container_name', CAM_PIPELINE_CONTAINER_NAME),
+                ],
             ),
             # Arduino Bridge Launch (Assuming this handles motor controllers/base I/O)
             IncludeLaunchDescription(
@@ -246,7 +266,11 @@ def generate_launch_description() -> LaunchDescription:
     # Webserver Launch
     webserver_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(webserver_bringup_launch_path),
-        launch_arguments=[('use_sim_time', sim_mode)],
+        launch_arguments=[
+            ('use_sim_time', sim_mode),
+            ('use_composition', use_composition),
+            ('cam_container_name', CAM_PIPELINE_CONTAINER_NAME),
+        ],
         condition=IfCondition(webserver),
     )
 
@@ -328,6 +352,7 @@ def generate_launch_description() -> LaunchDescription:
             declare_webserver_cmd,
             declare_agent_cmd,
             declare_use_composition_cmd,
+            declare_log_level_cmd,
             # Core Robot State & Control
             robot_state_publisher_node,
             delayed_controller_manager_spawner,
