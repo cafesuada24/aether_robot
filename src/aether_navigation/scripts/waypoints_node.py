@@ -2,21 +2,33 @@
 import math
 import os
 import re
+import time
 import uuid
-from typing import Any
+from typing import Any, cast
 
 import rclpy
+import rclpy.duration
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav2_msgs.action import NavigateToPose
 from rclpy.action import ActionClient
-from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.time import Time
+from tf2_ros import (
+    Buffer,
+    ConnectivityException,
+    ExtrapolationException,
+    LookupException,
+    TransformListener,
+)
 
 from aether_interfaces.srv import (
     # AddWaypoint,
     DeleteWaypoints,
     GetWaypoints,
     MoveToWaypoint,
+    SaveCurrentPoseWaypoint,
     SemanticQueryWaypoints,
     UpdateWaypoint,
 )
@@ -63,33 +75,32 @@ class WaypointsNode(Node):
     """
 
     def __init__(self) -> None:
-        super().__init__('waypoints_node')
+        super().__init__('/waypoints_manager')
 
         # Parameters
         self.declare_parameters_()
 
         self._global_frame: str = (
-            self.get_parameter("global_frame")
-            .get_parameter_value()
-            .string_value
+            self.get_parameter('global_frame').get_parameter_value().string_value
         )
 
         self._nav2_action_name: str = (
-            self.get_parameter("nav2_action_name")
-            .get_parameter_value()
-            .string_value
+            self.get_parameter('nav2_action_name').get_parameter_value().string_value
         )
         self._nav2_server_timeout_sec: float = (
-            self.get_parameter("nav2_server_timeout_sec")
+            self.get_parameter('nav2_server_timeout_sec')
             .get_parameter_value()
             .double_value
         )
         self._nav2_goal_response_timeout_sec: float = (
-            self.get_parameter("nav2_goal_response_timeout_sec")
+            self.get_parameter('nav2_goal_response_timeout_sec')
             .get_parameter_value()
             .double_value
         )
-        chroma_path = (
+        self._robot_base_frame: str = (
+            self.get_parameter('robot_base_frame').get_parameter_value().string_value
+        )
+        chroma_path: str = (
             self.get_parameter('chroma_path').get_parameter_value().string_value
         )
         if not chroma_path:
@@ -111,12 +122,11 @@ class WaypointsNode(Node):
             self._nav2_action_name,
             callback_group=self._nav_cb_group,
         )
-        # Service servers under /waypoints namespace
-        # self._add_srv = self.create_service(
-        #     AddWaypoint,
-        #     '/waypoints/add',
-        #     self.handle_add_waypoint,
-        # )
+
+        self._tf_buffer = Buffer()
+        self._tf_listener = TransformListener(self._tf_buffer, self, spin_thread=True)
+
+        self._srv_cb_group_ = MutuallyExclusiveCallbackGroup()
         self._get_srv = self.create_service(
             GetWaypoints,
             '/waypoints/get',
@@ -138,11 +148,17 @@ class WaypointsNode(Node):
             self.handle_semantic_query,
         )
 
-        # NEW: send a stored waypoint (by id) to Nav2
         self._send_to_nav_srv = self.create_service(
             MoveToWaypoint,
             '/waypoints/move_to_waypoint',
             self.handle_move_to_waypoint,
+            callback_group=self._srv_cb_group_,
+        )
+
+        self._save_current_pose_srv = self.create_service(
+            SaveCurrentPoseWaypoint,
+            '/waypoints/save_current_pose',
+            self.handle_save_current_pose_waypoint,
         )
 
         self.get_logger().info('WaypointsNode is up and running.')
@@ -157,6 +173,7 @@ class WaypointsNode(Node):
         self.declare_parameter('nav2_action_name', 'navigate_to_pose')
         self.declare_parameter('nav2_server_timeout_sec', 5.0)
         self.declare_parameter('nav2_goal_response_timeout_sec', 5.0)
+        self.declare_parameter('robot_base_frame', 'base_link')
 
     def _get_collection_for_map(self, map_id: int) -> chromadb.Collection:
         return self._client.get_or_create_collection(
@@ -223,6 +240,76 @@ class WaypointsNode(Node):
     #     response.message = 'Waypoint added.'
     #     response.waypoint_id = waypoint_id
     #     return response
+
+    def handle_save_current_pose_waypoint(
+        self,
+        request: SaveCurrentPoseWaypoint.Request,
+        response: SaveCurrentPoseWaypoint.Response,
+    ) -> SaveCurrentPoseWaypoint.Response:
+        map_id = cast('int', request.map_id)
+        name = cast('str', request.name.strip())
+
+        if not name:
+            response.success = False
+            response.message = 'Waypoint name cannot be empty.'
+            response.waypoint_id = ''
+            return response
+
+        try:
+            # Time() with no args means "latest available" in ROS 2 Python
+            transform = self._tf_buffer.lookup_transform(
+                self._global_frame,
+                self._robot_base_frame,
+                Time(),
+                timeout=rclpy.duration.Duration(seconds=0.5),
+            )
+        except (LookupException, ConnectivityException, ExtrapolationException) as ex:
+            self.get_logger().warn(f'TF lookup failed: {ex}')
+            response.success = False
+            response.message = (
+                f'Failed to get transform {self._global_frame} -> '
+                f'{self._robot_base_frame}: {ex}'
+            )
+            response.waypoint_id = ''
+            return response
+
+        t = transform.transform.translation
+        q = transform.transform.rotation
+
+        x = float(t.x)
+        y = float(t.y)
+
+        siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
+        cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+
+        collection = self._get_collection_for_map(map_id)
+
+        waypoint_id = str(uuid.uuid4())
+        metadata = {
+            'name': name,
+            'map_id': map_id,
+            'x': x,
+            'y': y,
+            'yaw': yaw,
+        }
+        document = request.description if request.description else name
+
+        collection.add(
+            ids=[waypoint_id],
+            documents=[document],
+            metadatas=[metadata],
+        )
+
+        self.get_logger().info(
+            f"Saved current pose as waypoint id={waypoint_id} name='{name}' "
+            f"map_id='{map_id}' pose=({x:.3f}, {y:.3f}, {yaw:.3f})",
+        )
+
+        response.success = True
+        response.message = 'Current pose saved as waypoint.'
+        response.waypoint_id = waypoint_id
+        return response
 
     def handle_get_waypoints(
         self,
@@ -449,8 +536,8 @@ class WaypointsNode(Node):
         request: MoveToWaypoint.Request,
         response: MoveToWaypoint.Response,
     ) -> MoveToWaypoint.Response:
-        map_id = request.map_id
-        waypoint_id = request.waypoint_id.strip()
+        map_id = cast('int', request.map_id)
+        waypoint_id = cast('str', request.waypoint_id.strip())
 
         if not waypoint_id:
             response.success = False
@@ -530,8 +617,10 @@ class WaypointsNode(Node):
         # Send goal asynchronously, then block locally on the goal response ONLY
         send_future = self._nav_action_client.send_goal_async(goal)
 
-        deadline = time.time() + self._nav2_goal_response_timeout_sec
-        while not send_future.done() and time.time() < deadline and rclpy.ok():
+        deadline = Time() + rclpy.duration.Duration(
+            seconds=self._nav2_goal_response_timeout_sec
+        )
+        while not send_future.done() and Time() < deadline and rclpy.ok():
             time.sleep(0.01)
 
         if not send_future.done():
