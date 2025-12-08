@@ -67,5 +67,5 @@ new_docker_shell:
 	docker exec -it $(or $(cont_name), 'aether_bot_cont') bash
 
 save_map:
-	ros2 service call /map_manager/save_map aether_interfaces/srv/SaveMap "{name: $(name)}"
+	ros2 service call /map_manager/save_map aether_interfaces/srv/SaveMap "{map_name: $(name)}"
 	
