@@ -1,5 +1,7 @@
 /camera/v4l2_camera:
   ros__parameters:
+    video_device: "/dev/video0"
+    output_encoding: "yuv422_yuy2"
     image_size: "[640, 480]"
     camera_frame_id: "front_camera_optical_link"
     

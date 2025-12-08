@@ -72,7 +72,7 @@ def generate_launch_description() -> LaunchDescription:
         composable_node_descriptions=[
             ComposableNode(
                 package='web_video_server',
-                plugin='webvideoserver:WebVideoServer',
+                plugin='web_video_server::WebVideoServer',
                 extra_arguments=[{'use_intra_process_comms': True}],
             ),
         ],
