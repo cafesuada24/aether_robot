@@ -34,7 +34,8 @@ def generate_launch_description() -> LaunchDescription:
         description='Container name that contains camera',
     )
     # foxglove_bridge_share_dir = get_package_share_directory('foxglove_bridge')
-    rosbridge_server_share_dir = FindPackageShare('rosbridge_server')
+    pkg_share = FindPackageShare(PKG_NAME)
+    # rosbridge_server_share_dir = FindPackageShare('rosbridge_server')
 
     # websocket_node = Node(
     #     package='rosbridge_server',
@@ -45,7 +46,7 @@ def generate_launch_description() -> LaunchDescription:
         FrontendLaunchDescriptionSource(
             PathJoinSubstitution(
                 [
-                    rosbridge_server_share_dir,
+                    pkg_share,
                     'launch',
                     # 'foxglove_bridge_launch.xml',
                     'rosbridge_websocket_launch.xml',
