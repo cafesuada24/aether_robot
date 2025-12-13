@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 # Clock
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"

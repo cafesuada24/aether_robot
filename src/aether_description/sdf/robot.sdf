@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2025 Cafesuada -->
+<!-- All rights reserved. -->
+
 <?xml version="1.0" encoding="UTF-8"?>
 <sdf version="1.8" xmlns:xacro="http://ros.org/wiki/xacro">
   <model name="aether_bot" canonical_link="base_link">

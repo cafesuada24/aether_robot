@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #include <rclcpp/rclcpp.hpp>
 
 #include "geometry_msgs/msg/twist.hpp"

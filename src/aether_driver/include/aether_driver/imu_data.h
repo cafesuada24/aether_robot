@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #ifndef AETHER_DRIVER__IMU_DATA_H_
 #define AETHER_DRIVER__IMU_DATA_H_
 #include <vector>

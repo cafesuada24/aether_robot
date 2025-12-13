@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #include "aether_driver/wheel.h"
 
 #include <cmath>

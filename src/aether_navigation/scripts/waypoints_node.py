@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 import math
 import os
 import re

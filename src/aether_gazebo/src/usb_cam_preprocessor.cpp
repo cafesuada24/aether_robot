@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #include <opencv2/core/types.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/publisher.hpp>

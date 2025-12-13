@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 from launch import LaunchDescription
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node

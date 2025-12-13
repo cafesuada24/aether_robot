@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #ifndef AETHER_NAVIGATION__STRING_UTILTS_
 #define AETHER_NAVIGATION__STRING_UTILTS_
 #include <set>
@@ -18,7 +21,6 @@ static const std::set<char> invalid_filename_chars{'<',  '>', ':', '"', '/',
  * * @param input The original string to transform.
  * @return The sanitized, valid path name component.
  *
- * author: cafesuada
  */
 std::string toValidPathName(const std::string& input);
 };  // namespace aether_navigation::string_utils

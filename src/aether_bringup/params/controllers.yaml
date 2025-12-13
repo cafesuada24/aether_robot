@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 controller_manager:
   ros__parameters:
     update_rate: 30

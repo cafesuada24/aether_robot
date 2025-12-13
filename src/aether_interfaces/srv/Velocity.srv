@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 geometry_msgs/TwistStamped velocity_command
 ---
 int16 code

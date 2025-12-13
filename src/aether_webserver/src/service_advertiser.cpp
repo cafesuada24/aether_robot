@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
 #include <avahi-common/alternative.h>

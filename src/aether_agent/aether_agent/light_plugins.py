@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 from typing import Annotated
 from semantic_kernel.functions import kernel_function
 

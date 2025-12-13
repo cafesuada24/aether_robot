@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 /ros_arduino_bridge:
   ros__parameters:
     serial_port: '/dev/ttyUSB0'

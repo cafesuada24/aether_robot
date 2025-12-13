@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #ifndef OBJECT_TRACKER__OBJECT_TRACKER_HPP_
 #define OBJECT_TRACKER__OBJECT_TRACKER_HPP_
 

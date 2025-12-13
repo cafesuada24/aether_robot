@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #if !defined(_WIN32)
 
 #ifndef AETHER_DRIVER__IMPL__UNIX_H_

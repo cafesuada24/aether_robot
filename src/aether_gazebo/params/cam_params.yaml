@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 /**:
   ros__parameters:
     video_device: "/dev/video0"

@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 import math
 from typing import Annotated, Literal
 from uuid import uuid4

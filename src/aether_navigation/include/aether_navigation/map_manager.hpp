@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #ifndef AETHER_NAVIGATION__MAP_MANAGER_HPP_
 #define AETHER_NAVIGATION__MAP_MANAGER_HPP_
 

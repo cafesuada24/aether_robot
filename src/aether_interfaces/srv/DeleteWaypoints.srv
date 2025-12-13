@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 uint16 map_id
 string[] waypoint_ids
 ---

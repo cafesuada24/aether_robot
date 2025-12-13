@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>aether_description</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="108068915+cafesuada24@users.noreply.github.com">serein</maintainer>
-  <license>Apache-2.0</license>
+  <version>0.1.0</version>
+  <description>Worlds and robot descriptions for Aether robot</description>
+  <maintainer email="108068915+cafesuada24@users.noreply.github.com">Cafesuada</maintainer>
+  <license>Proprietary</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
+
 #include "aether_navigation/map_manager.hpp"
 
 #include <features.h>

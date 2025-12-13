@@ -1,4 +1,5 @@
-/* Author: cafesuada */
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
 
 #include <memory>
 #include <rclcpp/executor_options.hpp>

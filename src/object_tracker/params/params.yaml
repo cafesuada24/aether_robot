@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 object_detector:
   ros__parameters:
     # focal_length: 502.778

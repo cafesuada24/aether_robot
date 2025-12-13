@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Cafesuada
+# All rights reserved.
+
 """This module contains base Large Language Model implementation."""
 from abc import ABC, abstractmethod
 

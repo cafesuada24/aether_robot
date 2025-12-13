@@ -1,4 +1,5 @@
-/*author: cafesuada*/
+// Copyright (c) 2025 Cafesuada
+// All rights reserved.
 
 #include "aether_navigation/mode_manager.hpp"
 
