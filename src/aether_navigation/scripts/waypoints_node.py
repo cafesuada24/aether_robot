@@ -79,7 +79,7 @@ class WaypointsNode(Node):
     """
 
     def __init__(self) -> None:
-        super().__init__('/waypoints_manager')
+        super().__init__('waypoints_manager')
 
         # Parameters
         self.declare_parameters_()
